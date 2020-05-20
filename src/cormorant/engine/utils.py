@@ -98,6 +98,9 @@ def init_file_paths(args):
             args.subset = 'uracil'
         if not args.target:
             args.target = 'energies'
+    elif args.dataset.startswith('pdbbind'):
+       if not args.target:
+            args.target = 'label'
     else:
         raise ValueError('Dataset must be qm9 or md17!')
 
