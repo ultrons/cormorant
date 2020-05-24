@@ -209,7 +209,8 @@ def setup_argparse(dataset):
         parser.add_argument('--subtract-thermo', action=BoolArg, default=True,
                             help='Subtract thermochemical energy from relvant learning targets in QM9 dataset.')
     elif dataset == "pdbbind":
-        parser.add_Argument('--ignore_check', action=BoolArg, default=True)
+        parser.add_argument('--ignore_check', action=BoolArg, default=True,
+                            help='override the condition that all datasets need the same atom species.')
     else:
         raise ValueError("Dataset is not recognized")
     return parser
