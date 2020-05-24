@@ -10,7 +10,7 @@ from cormorant.data.prepare import prepare_dataset
 
 
 def initialize_datasets(args, datadir, dataset, subset=None, splits=None,
-                        force_download=False, subtract_thermo=False):
+                        force_download=False, subtract_thermo=False, ignore_check=False):
     """
     Initialize datasets.
 
@@ -70,7 +70,7 @@ def initialize_datasets(args, datadir, dataset, subset=None, splits=None,
                ), 'Datasets must have same set of keys!'
 
     # Get a list of all species across the entire dataset
-    all_species = _get_species(datasets, ignore_check=False)
+    all_species = _get_species(datasets, ignore_check=ignore_check)
 
     # Now initialize MolecularDataset based upon loaded data
     datasets = {split: ProcessedDataset(data, num_pts=num_pts.get(
