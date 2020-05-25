@@ -237,7 +237,9 @@ class Engine:
             loss.backward()
 
             # Clip the gradient
+            print('Clip value:',self.clip_value)
             if self.clip_value is not None:
+                print('clipping')
                 torch.nn.utils.clip_grad_value_(self.model.parameters(), self.clip_value)
 
             # Step optimizer and learning rate
@@ -305,6 +307,6 @@ class Engine:
         if self.args.predict:
             file = self.args.predictfile + '.' + suffix + '.' + dataset + '.pt'
             logging.info('Saving predictions to file: {}'.format(file))
-            torch.save({'predict': predict, 'targets': targets}, file)
+            torch.save({'predict': predict, 'targets': targets, 'mu': mu, 'sigma': sigma}, file)
 
         return mae, rmse
