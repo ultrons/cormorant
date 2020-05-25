@@ -22,7 +22,7 @@ class Engine:
 
     Roughly based upon TorchNet
     """
-    def __init__(self, args, dataloaders, model, loss_fn, optimizer, scheduler, restart_epochs, device, dtype):
+    def __init__(self, args, dataloaders, model, loss_fn, optimizer, scheduler, restart_epochs, device, dtype, clip_value=None):
         self.args = args
         self.dataloaders = dataloaders
         self.model = model
@@ -30,6 +30,7 @@ class Engine:
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.restart_epochs = restart_epochs
+        self.clip_value = clip_value
 
         self.stats = dataloaders['train'].dataset.stats
 
@@ -234,6 +235,10 @@ class Engine:
             # Calculate loss and backprop
             loss = self.loss_fn(predict, targets)
             loss.backward()
+
+            # Clip the gradient
+            if self.clip_value is not None:
+                torch.nn.utils.clip_grad_value_(self.model.parameters(), self.clip_value)
 
             # Step optimizer and learning rate
             self.optimizer.step()
