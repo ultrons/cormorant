@@ -22,7 +22,7 @@ class Engine:
 
     Roughly based upon TorchNet
     """
-    def __init__(self, args, dataloaders, model, loss_fn, optimizer, scheduler, restart_epochs, device, dtype, clip_value=None):
+    def __init__(self, args, dataloaders, model, loss_fn, optimizer, scheduler, restart_epochs, device, dtype, clip_value=0.2):
         self.args = args
         self.dataloaders = dataloaders
         self.model = model
@@ -237,9 +237,7 @@ class Engine:
             loss.backward()
 
             # Clip the gradient
-            print('Clip value:',self.clip_value)
             if self.clip_value is not None:
-                print('clipping')
                 torch.nn.utils.clip_grad_value_(self.model.parameters(), self.clip_value)
 
             # Step optimizer and learning rate
