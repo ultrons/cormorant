@@ -211,6 +211,9 @@ def setup_argparse(dataset):
     elif dataset == "pdbbind":
         parser.add_argument('--ignore_check', action=BoolArg, default=True,
                             help='override the condition that all datasets need the same atom species.')
+    elif dataset == "resdel":
+        parser.add_argument('--ignore_check', action=BoolArg, default=True,
+                            help='override the condition that all datasets need the same atom species.')
     else:
         raise ValueError("Dataset is not recognized")
     return parser

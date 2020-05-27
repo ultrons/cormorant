@@ -76,6 +76,9 @@ def prepare_dataset(datadir, dataset, subset=None, splits=None, cleanup=True, fo
         elif dataset.lower().startswith('pdbbind'):
             raise NotImplementedError(
                 'Download of PDBBind currently not implemented!')
+        elif dataset.lower().startswith('resdel'):
+            raise NotImplementedError(
+                'Download of ResDel currently not implemented!')
         else:
             raise ValueError(
                 'Incorrect choice of dataset! Must chose qm9/md17!')
