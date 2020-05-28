@@ -11,6 +11,9 @@ MAE = torch.nn.L1Loss()
 MSE = torch.nn.MSELoss()
 RMSE = lambda x, y : sqrt(MSE(x, y))
 
+CROSSENT = torch.nn.functional.nll_loss
+ACCURACY = lambda predict, target : (predict == target).float().mean()
+
 import logging
 logger = logging.getLogger(__name__)
 
