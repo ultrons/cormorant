@@ -25,7 +25,8 @@ class Engine:
 
     Roughly based upon TorchNet
     """
-    def __init__(self, args, dataloaders, model, loss_fn, optimizer, scheduler, restart_epochs, device, dtype, clip_value=0.2):
+    def __init__(self, args, dataloaders, model, loss_fn, optimizer, scheduler, restart_epochs, device, dtype, 
+                 task='regression', clip_value=0.2):
         self.args = args
         self.dataloaders = dataloaders
         self.model = model
@@ -34,6 +35,7 @@ class Engine:
         self.scheduler = scheduler
         self.restart_epochs = restart_epochs
         self.clip_value = clip_value
+        self.task = task
 
         self.stats = dataloaders['train'].dataset.stats
 
@@ -148,16 +150,33 @@ class Engine:
 
     def _log_minibatch(self, batch_idx, loss, targets, predict, batch_t, epoch_t):
         mini_batch_loss = loss.item()
-        mini_batch_mae = MAE(predict, targets)
-        mini_batch_rmse = RMSE(predict, targets)
 
-        # Exponential average of recent MAE/RMSE on training set for more convenient logging.
-        if batch_idx == 0:
-            self.mae, self.rmse = mini_batch_mae, mini_batch_rmse
-        else:
-            alpha = self.args.alpha
-            self.mae = alpha * self.mae + (1 - alpha) * mini_batch_mae
-            self.rmse = alpha * self.rmse + (1 - alpha) * mini_batch_rmse
+        if self.task == 'regression':
+            mini_batch_mae = MAE(predict, targets)
+            mini_batch_rmse = RMSE(predict, targets)
+            # Exponential average of recent MAE/RMSE on training set for more convenient logging.
+            if batch_idx == 0:
+                self.mae, self.rmse = mini_batch_mae, mini_batch_rmse
+            else:
+                alpha = self.args.alpha
+                self.mae = alpha * self.mae + (1 - alpha) * mini_batch_mae
+                self.rmse = alpha * self.rmse + (1 - alpha) * mini_batch_rmse
+            # Define what to log
+            log1, log2, log3 = sqrt(mini_batch_loss), self.mae, self.rmse
+
+        elif self.task == 'classification':
+            mini_batch_crossent = CROSSENT(predict, targets)
+            pred_class = predict.argmax(dim=-1)
+            mini_batch_accuracy = ACCURACY(pred_class, targets)
+            # Exponential average of recent CROSSENT/ACCURACY on training set for more convenient logging.
+            if batch_idx == 0:
+                self.crossent, self.accuracy = mini_batch_crossent, mini_batch_accuracy
+            else:
+                alpha = self.args.alpha
+                self.crossent = alpha * self.crossent + (1 - alpha) * mini_batch_crossent
+                self.accuracy = alpha * self.accuracy + (1 - alpha) * mini_batch_accuracy
+            # Define what to log
+            log1, log2, log3 = mini_batch_loss, self.crossent, self.accuracy
 
         dtb = (datetime.now() - batch_t).total_seconds()
         tepoch = (datetime.now() - epoch_t).total_seconds()
@@ -166,7 +185,7 @@ class Engine:
 
         if self.args.textlog:
             logstring = 'E:{:3}/{}, B: {:5}/{}'.format(self.epoch+1, self.args.num_epoch, batch_idx, len(self.dataloaders['train']))
-            logstring += '{:> 9.4f}{:> 9.4f}{:> 9.4f}'.format(sqrt(mini_batch_loss), self.mae, self.rmse)
+            logstring += '{:> 9.4f}{:> 9.4f}{:> 9.4f}'.format(log1,log2,log3)
             logstring += '  dt:{:> 6.2f}{:> 8.2f}{:> 8.2f}'.format(dtb, tepoch, tcollate)
 
             logging.info(logstring)
@@ -197,11 +216,17 @@ class Engine:
             valid_predict, valid_targets = self.predict('valid')
             test_predict,  test_targets  = self.predict('test')
 
-            train_mae, train_rmse = self.log_predict(train_predict, train_targets, 'train', epoch=epoch)
-            valid_mae, valid_rmse = self.log_predict(valid_predict, valid_targets, 'valid', epoch=epoch)
-            test_mae,  test_rmse  = self.log_predict(test_predict,  test_targets,  'test',  epoch=epoch)
-
-            self._save_checkpoint(valid_mae)
+            # TO DO: Generalize to classification!
+            if self.task == 'regression':
+                train_mae, train_rmse = self.log_predict(train_predict, train_targets, 'train', epoch=epoch)
+                valid_mae, valid_rmse = self.log_predict(valid_predict, valid_targets, 'valid', epoch=epoch)
+                test_mae,  test_rmse  = self.log_predict(test_predict,  test_targets,  'test',  epoch=epoch)
+                self._save_checkpoint(valid_mae)
+            elif self.task == 'classification':
+                train_crossent, train_accuracy = self.log_predict(train_predict, train_targets, 'train', epoch=epoch)
+                valid_crossent, valid_accuracy = self.log_predict(valid_predict, valid_targets, 'valid', epoch=epoch)
+                test_crossent,  test_accuracy  = self.log_predict(test_predict,  test_targets,  'test',  epoch=epoch)
+                self._save_checkpoint(valid_crossent)
 
             logging.info('Epoch {} complete!'.format(epoch+1))
 
@@ -291,21 +316,27 @@ class Engine:
         predict = predict.cpu().double()
         targets = targets.cpu().double()
 
-        mae = MAE(predict, targets)
-        rmse = RMSE(predict, targets)
-
-        mu, sigma = self.stats[self.args.target]
-        mae_units = sigma*mae
-        rmse_units = sigma*rmse
+        if self.task == 'regression':
+            mae = MAE(predict, targets)
+            rmse = RMSE(predict, targets)
+            mu, sigma = self.stats[self.args.target]
+            mae_units = sigma*mae
+            rmse_units = sigma*rmse
+            log1, log2, log3, log4 = mae, rmse, mae_units, rmse_units
+        elif self.task == 'classification':
+            pred_class = predict.argmax(dim=-1)
+            crossent = CROSSENT(predict,targets)
+            accuracy = ACCURACY(pred_class,targets.long())
+            log1, log2, log3, log4 = crossent, accuracy, crossent, accuracy
 
         datastrings = {'train': 'Training', 'test': 'Testing', 'valid': 'Validation'}
 
         if epoch >= 0:
             suffix = 'final'
-            logging.info('Epoch: {} Complete! {} {} Loss: {:8.4f} {:8.4f}   w/units: {:8.4f} {:8.4f}'.format(epoch+1, description, datastrings[dataset], mae, rmse, mae_units, rmse_units))
+            logging.info('Epoch: {} Complete! {} {} Loss: {:8.4f} {:8.4f}   w/units: {:8.4f} {:8.4f}'.format(epoch+1, description, datastrings[dataset], log1, log2, log3, log4))
         else:
             suffix = 'best'
-            logging.info('Training Complete! {} {} Loss: {:8.4f} {:8.4f}   w/units: {:8.4f} {:8.4f}'.format(description, datastrings[dataset], mae, rmse, mae_units, rmse_units))
+            logging.info('Training Complete! {} {} Loss: {:8.4f} {:8.4f}   w/units: {:8.4f} {:8.4f}'.format(description, datastrings[dataset], log1, log2, log3, log4))
 
         if self.args.predict:
             file = self.args.predictfile + '.' + suffix + '.' + dataset + '.pt'
