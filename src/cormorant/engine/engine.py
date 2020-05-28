@@ -14,6 +14,9 @@ RMSE = lambda x, y : sqrt(MSE(x, y))
 import logging
 logger = logging.getLogger(__name__)
 
+#torch.autograd.set_detect_anomaly(True)
+
+
 class Engine:
     """
     Class for both training and inference phasees of the Cormorant network.
@@ -192,9 +195,11 @@ class Engine:
 
             train_predict, train_targets = self.train_epoch()
             valid_predict, valid_targets = self.predict('valid')
+            test_predict,  test_targets  = self.predict('test')
 
             train_mae, train_rmse = self.log_predict(train_predict, train_targets, 'train', epoch=epoch)
             valid_mae, valid_rmse = self.log_predict(valid_predict, valid_targets, 'valid', epoch=epoch)
+            test_mae,  test_rmse  = self.log_predict(test_predict,  test_targets,  'test',  epoch=epoch)
 
             self._save_checkpoint(valid_mae)
 
