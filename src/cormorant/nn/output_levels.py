@@ -205,3 +205,45 @@ class OutputPMLP(nn.Module):
         predict = predict.squeeze(-1)
 
         return predict
+
+
+class OutputSoftmax(nn.Module):
+    """
+    Module to create prediction based upon a set of rotationally invariant
+    atom feature vectors. This is performed in a permutation invariant way
+    by using a (batch-masked) sum over all atoms, and then applying a
+    linear mixing layer to predict a single output.
+
+    Parameters
+    ----------
+    num_scalars : :class:`int`
+        Number scalars that will be used in the prediction at the output
+        of the network.
+    bias : :class:`bool`, optional
+        Include a bias term in the linear mixing level.
+    device : :class:`torch.device`, optional
+        Device to instantite the module to.
+    dtype : :class:`torch.dtype`, optional
+        Data type to instantite the module to.
+    """
+
+    def __init__(self, num_scalars, bias=True, device=torch.device('cpu'), dtype=torch.float):
+        super(OutputSoftmax, self).__init__()
+
+        self.num_scalars = num_scalars
+        self.bias = bias
+
+        self.lin = nn.Linear(2*num_scalars, 2, bias=bias)
+        self.lin.to(device=device, dtype=dtype)
+
+        self.zero = torch.tensor(0, dtype=dtype, device=device)
+
+    def forward(self, scalars, ignore=True):
+        s = scalars.shape
+        scalars = scalars.view((s[0], s[1], -1)).sum(1)
+
+        predict = self.lin(scalars)
+        predict = predict.squeeze(-1)
+
+        return predict
+
