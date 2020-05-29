@@ -30,6 +30,7 @@ class Engine:
     """
     def __init__(self, args, dataloaders, model, loss_fn, optimizer, scheduler, restart_epochs, device, dtype, 
                  task='regression', clip_value=0.2):
+
         self.args = args
         self.dataloaders = dataloaders
         self.model = model
@@ -230,18 +231,25 @@ class Engine:
                 valid_crossent, valid_accuracy = self.log_predict(valid_predict, valid_targets, 'valid', epoch=epoch)
                 test_crossent,  test_accuracy  = self.log_predict(test_predict,  test_targets,  'test',  epoch=epoch)
                 self._save_checkpoint(valid_crossent)
+            else:
+                raise ValueError('Improper choice of task! {} (should be either regression or classification)'.format(self.task))
 
             logging.info('Epoch {} complete!'.format(epoch+1))
 
-    def _get_target(self, data, stats=None):
+    def _get_target(self, data):
         """
         Get the learning target.
         If a stats dictionary is included, return a normalized learning target.
         """
-        targets = data[self.args.target].to(self.device, self.dtype)
 
-        if stats is not None:
-            mu, sigma = stats[self.args.target]
+        target_dtype = self.dtype
+        if self.task == 'classification':
+            target_dtype = torch.long
+
+        targets = data[self.args.target].to(self.device, target_dtype)
+
+        if self.task == 'regression' and self.args.target in self.stats.keys():
+            mu, sigma = self.stats[self.args.target]
             targets = (targets - mu) / sigma
 
         return targets
@@ -250,8 +258,15 @@ class Engine:
         dataloader = self.dataloaders['train']
 
         current_idx, num_data_pts = 0, len(dataloader.dataset)
-        self.mae, self.rmse, self.batch_time = 0, 0, 0
+
+        if self.task == 'regression':
+            self.mae, self.rmse, self.batch_time = 0, 0, 0
+        elif self.task == 'classification':
+            self.crossent, self.accuracy, self.batch_time = 0, 0, 0
+        else:
+            raise ValueError('Improper choice of task! {} (should be either regression or classification)'.format(self.task))
         all_predict, all_targets = [], []
+        sum_loss = 0
 
         self.model.train()
         epoch_t = datetime.now()
@@ -262,7 +277,7 @@ class Engine:
             self.optimizer.zero_grad()
 
             # Get targets and predictions
-            targets = self._get_target(data, self.stats)
+            targets = self._get_target(data)
             predict = self.model(data)
 
             # Calculate loss and backprop

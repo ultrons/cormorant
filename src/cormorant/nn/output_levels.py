@@ -217,8 +217,10 @@ class OutputSoftmax(nn.Module):
     Parameters
     ----------
     num_scalars : :class:`int`
-        Number scalars that will be used in the prediction at the output
+        Number of scalars that will be used in the prediction at the output
         of the network.
+    num_classes : :class:`int`
+        Number of classes.
     bias : :class:`bool`, optional
         Include a bias term in the linear mixing level.
     device : :class:`torch.device`, optional
@@ -227,13 +229,13 @@ class OutputSoftmax(nn.Module):
         Data type to instantite the module to.
     """
 
-    def __init__(self, num_scalars, bias=True, device=torch.device('cpu'), dtype=torch.float):
+    def __init__(self, num_scalars, num_classes, bias=True, device=torch.device('cpu'), dtype=torch.float):
         super(OutputSoftmax, self).__init__()
 
         self.num_scalars = num_scalars
         self.bias = bias
 
-        self.lin = nn.Linear(2*num_scalars, 2, bias=bias)
+        self.lin = nn.Linear(2*num_scalars, num_classes, bias=bias)
         self.lin.to(device=device, dtype=dtype)
 
         self.zero = torch.tensor(0, dtype=dtype, device=device)
