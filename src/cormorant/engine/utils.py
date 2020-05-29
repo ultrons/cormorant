@@ -101,6 +101,9 @@ def init_file_paths(args):
     elif args.dataset.startswith('pdbbind'):
        if not args.target:
             args.target = 'label'
+    elif args.dataset.startswith('resdel'):
+       if not args.target:
+            args.target = 'residue'
     else:
         raise ValueError('Dataset must be qm9 or md17!')
 
