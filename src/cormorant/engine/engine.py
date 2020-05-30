@@ -173,12 +173,8 @@ class Engine:
             pred_class = predict.argmax(dim=-1)
             mini_batch_accuracy = ACCURACY(pred_class, targets)
             # Exponential average of recent CROSSENT/ACCURACY on training set for more convenient logging.
-            if batch_idx == 0:
-                self.crossent, self.accuracy = mini_batch_crossent, mini_batch_accuracy
-            else:
-                alpha = self.args.alpha
-                self.crossent = alpha * self.crossent + (1 - alpha) * mini_batch_crossent
-                self.accuracy = alpha * self.accuracy + (1 - alpha) * mini_batch_accuracy
+            self.crossent = mini_batch_crossent
+            self.accuracy = mini_batch_accuracy
             # Define what to log
             log1, log2, log3 = mini_batch_loss, self.crossent, self.accuracy
 
@@ -316,7 +312,7 @@ class Engine:
 
         for batch_idx, data in enumerate(dataloader):
 
-            targets = self._get_target(data, self.stats)
+            targets = self._get_target(data)
             predict = self.model(data).detach()
 
             all_targets.append(targets)
