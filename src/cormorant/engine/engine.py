@@ -216,7 +216,6 @@ class Engine:
             valid_predict, valid_targets = self.predict('valid')
             test_predict,  test_targets  = self.predict('test')
 
-            # TO DO: Generalize to classification!
             if self.task == 'regression':
                 train_mae, train_rmse = self.log_predict(train_predict, train_targets, 'train', epoch=epoch)
                 valid_mae, valid_rmse = self.log_predict(valid_predict, valid_targets, 'valid', epoch=epoch)
@@ -327,6 +326,7 @@ class Engine:
         return all_predict, all_targets
 
     def log_predict(self, predict, targets, dataset, epoch=-1, description='Current'):
+
         predict = predict.cpu().double()
         targets = targets.cpu().double()
 
@@ -339,8 +339,8 @@ class Engine:
             log1, log2, log3, log4 = mae, rmse, mae_units, rmse_units
         elif self.task == 'classification':
             pred_class = predict.argmax(dim=-1)
-            crossent = CROSSENT(predict,targets)
-            accuracy = ACCURACY(pred_class,targets.long())
+            crossent = CROSSENT(predict.long(),targets.long())
+            accuracy = ACCURACY(pred_class,targets)
             log1, log2, log3, log4 = crossent, accuracy, crossent, accuracy
 
         datastrings = {'train': 'Training', 'test': 'Testing', 'valid': 'Validation'}
