@@ -16,23 +16,25 @@ Getting started
 Installation
 ------------
 
-Cloning the git repo
-`````````````````````
-
 Cormorant can be cloned directly from the git repo using::
 
-    git clone https://github.com/risilab/cormorant.git
+    git clone https://github.com/drorlab/cormorant.git
 
-Using pip
-`````````
-
-Cormorant is installable from source using pip.  You can currently install it from
+You can currently install it from
 source by going to the directory with setup.py and running::
 
-    pip install cormorant .
+    python setup.py
 
 If you would like to modify the source code directly, note that Cormorant
 can also be installed in "development mode" using the command::
+
+    python setup.py develop
+
+Cormorant is also installable from source using pip::
+
+    pip install cormorant .
+
+and for "development mode" with::
 
     pip install cormorant -e .
 
@@ -58,3 +60,6 @@ Architecture
 ================
 
 A more detailed description of the Cormorant architecture is available in `the Cormorant paper <https://arxiv.org/abs/1906.04015>`_.
+
+The version here was extended to work not only on regression but also on classification tasks.
+
