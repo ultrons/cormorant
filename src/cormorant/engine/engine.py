@@ -29,7 +29,7 @@ class Engine:
     Roughly based upon TorchNet
     """
     def __init__(self, args, dataloaders, model, loss_fn, optimizer, scheduler, restart_epochs, device, dtype, 
-                 task='regression', clip_value=0.2):
+                 task='regression', clip_value=0.2, log_test=False):
 
         self.args = args
         self.dataloaders = dataloaders
@@ -40,6 +40,7 @@ class Engine:
         self.restart_epochs = restart_epochs
         self.clip_value = clip_value
         self.task = task
+        self.log_test = log_test
 
         self.stats = dataloaders['train'].dataset.stats
 
@@ -139,7 +140,6 @@ class Engine:
 
         logging.info('Inference phase complete!')
 
-
     def _warm_restart(self, epoch):
         restart_epochs = self.restart_epochs
 
@@ -193,7 +193,6 @@ class Engine:
         if self.summarize:
             self.summarize.add_scalar('train/mae', sqrt(mini_batch_loss), self.minibatch)
 
-
     def _step_lr_batch(self):
         if self.args.lr_minibatch:
             self.scheduler.step()
@@ -214,18 +213,22 @@ class Engine:
 
             train_predict, train_targets = self.train_epoch()
             valid_predict, valid_targets = self.predict('valid')
-            test_predict,  test_targets  = self.predict('test')
+
+            if self.log_test:
+                test_predict,  test_targets  = self.predict('test')
 
             if self.task == 'regression':
                 train_mae, train_rmse = self.log_predict(train_predict, train_targets, 'train', epoch=epoch)
                 valid_mae, valid_rmse = self.log_predict(valid_predict, valid_targets, 'valid', epoch=epoch)
-                test_mae,  test_rmse  = self.log_predict(test_predict,  test_targets,  'test',  epoch=epoch)
                 self._save_checkpoint(valid_mae)
+                if self.log_test:
+                    test_mae,  test_rmse  = self.log_predict(test_predict,  test_targets,  'test',  epoch=epoch)
             elif self.task == 'classification':
                 train_crossent, train_accuracy = self.log_predict(train_predict, train_targets, 'train', epoch=epoch)
                 valid_crossent, valid_accuracy = self.log_predict(valid_predict, valid_targets, 'valid', epoch=epoch)
-                test_crossent,  test_accuracy  = self.log_predict(test_predict,  test_targets,  'test',  epoch=epoch)
                 self._save_checkpoint(valid_crossent)
+                if self.log_test:
+                    test_crossent,  test_accuracy  = self.log_predict(test_predict,  test_targets,  'test',  epoch=epoch)
             else:
                 raise ValueError('Improper choice of task! {} (should be either regression or classification)'.format(self.task))
 
@@ -327,10 +330,9 @@ class Engine:
 
     def log_predict(self, predict, targets, dataset, epoch=-1, description='Current'):
 
-        predict = predict.cpu().double()
-        targets = targets.cpu().double()
-
         if self.task == 'regression':
+            predict = predict.cpu().double()
+            targets = targets.cpu().double()
             mae = MAE(predict, targets)
             rmse = RMSE(predict, targets)
             mu, sigma = self.stats[self.args.target]
@@ -338,9 +340,11 @@ class Engine:
             rmse_units = sigma*rmse
             log1, log2, log3, log4 = mae, rmse, mae_units, rmse_units
         elif self.task == 'classification':
+            predict = predict.cpu().double()
+            targets = targets.cpu()
             pred_class = predict.argmax(dim=-1)
-            crossent = CROSSENT(predict.long(),targets.long())
-            accuracy = ACCURACY(pred_class,targets)
+            crossent = CROSSENT(predict,targets)
+            accuracy = ACCURACY(pred_class,targets.long())
             log1, log2, log3, log4 = crossent, accuracy, crossent, accuracy
 
         datastrings = {'train': 'Training', 'test': 'Testing', 'valid': 'Validation'}
@@ -355,6 +359,11 @@ class Engine:
         if self.args.predict:
             file = self.args.predictfile + '.' + suffix + '.' + dataset + '.pt'
             logging.info('Saving predictions to file: {}'.format(file))
-            torch.save({'predict': predict, 'targets': targets, 'mu': mu, 'sigma': sigma}, file)
+            if self.task == 'regression':
+                torch.save({'predict': predict, 'targets': targets, 'mu': mu, 'sigma': sigma}, file)
+            else:
+                torch.save({'predict': predict, 'targets': targets}, file)
 
-        return mae, rmse
+        return log1, log2
+
+

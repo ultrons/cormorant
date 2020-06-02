@@ -209,13 +209,20 @@ def setup_argparse(dataset):
         parser.add_argument('--subtract-thermo', action=BoolArg, default=True,
                             help='Subtract thermochemical energy from relvant learning targets in QM9 dataset.')
     elif dataset == "pdbbind":
-        parser.add_argument('--ignore_check', action=BoolArg, default=True,
+        parser.add_argument('--ignore_check', action=BoolArg, default=False,
                             help='override the condition that all datasets need the same atom species.')
     elif dataset == "resdel":
-        parser.add_argument('--ignore_check', action=BoolArg, default=True,
+        parser.add_argument('--ignore_check', action=BoolArg, default=False,
                             help='override the condition that all datasets need the same atom species.')
+        parser.add_argument('--num_classes', type=int, default=20,
+                            help='number of classes for the classification.')
+    elif dataset == "mutation":
+        parser.add_argument('--ignore_check', action=BoolArg, default=False,
+                            help='override the condition that all datasets need the same atom species.')
+        parser.add_argument('--num_classes', type=int, default=2,
+                            help='number of classes for the classification.')
     else:
-        raise ValueError("Dataset is not recognized")
+        raise ValueError("Dataset is not recognized.")
     return parser
 
 
