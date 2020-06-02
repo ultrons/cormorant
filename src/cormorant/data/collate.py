@@ -82,3 +82,60 @@ def collate_fn(batch):
     batch['edge_mask'] = edge_mask
 
     return batch
+
+
+def collate_siamese(batch):
+    """
+    Collation function that collates datapoints into the batch format for cormorant
+
+    Parameters
+    ----------
+    batch : list of datapoints
+        The data to be collated.
+
+    Returns
+    -------
+    batch : dict of Pytorch tensors
+        The collated data.
+    """
+    batch = {prop: batch_stack([mol[prop] for mol in batch]) for prop in batch[0].keys()}
+
+    print('Batch:', batch.keys())
+
+    print('label:',     batch['label'].shape)
+    print('charges:',   batch['charges'].shape)
+    print('positions:', batch['positions'].shape)
+    print('one_hot:',   batch['one_hot'].shape)
+
+    print('size of the tuple:', batch['charges'].shape[1])
+    size_once = int(batch['charges'].shape[1]/2)
+    print('size of one structure', size_once)
+    charges1 = batch['charges'][:,:size_once]
+    charges2 = batch['charges'][:,size_once:]
+    to_keep1 = (charges1.sum(0) > 0)
+    to_keep2 = (charges2.sum(0) > 0)
+    print('to keep:', to_keep1, to_keep2)
+
+    new_batch = {}
+    # Copy label data. TODO: Generalize!
+    new_batch['label'] = batch['label']
+    # Split structural data
+    new_batch['charges1']   = drop_zeros( batch['charges'][:,:size_once], to_keep1 )
+    new_batch['charges2']   = drop_zeros( batch['charges'][:,size_once:], to_keep2 )
+    new_batch['positions1'] = drop_zeros( batch['positions'][:,:size_once,:], to_keep1 )
+    new_batch['positions1'] = drop_zeros( batch['positions'][:,size_once:,:], to_keep2 )
+    new_batch['one_hot1']   = drop_zeros( batch['one_hot'][:,:size_once,:], to_keep1 )
+    new_batch['one_hot1']   = drop_zeros( batch['one_hot'][:,size_once:,:], to_keep2 )
+
+    atom_mask1 = new_batch['charges1'] > 0
+    atom_mask2 = new_batch['charges2'] > 0
+    edge_mask1 = atom_mask1.unsqueeze(1) * atom_mask1.unsqueeze(2)
+    edge_mask2 = atom_mask2.unsqueeze(1) * atom_mask2.unsqueeze(2)
+
+    new_batch['atom_mask1'] = atom_mask1
+    new_batch['atom_mask2'] = atom_mask2
+    new_batch['edge_mask1'] = edge_mask1
+    new_batch['edge_mask2'] = edge_mask2
+
+    return new_batch
+

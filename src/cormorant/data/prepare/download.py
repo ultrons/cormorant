@@ -79,6 +79,9 @@ def prepare_dataset(datadir, dataset, subset=None, splits=None, cleanup=True, fo
         elif dataset.lower().startswith('resdel'):
             raise NotImplementedError(
                 'Download of ResDel currently not implemented!')
+        elif dataset.lower().startswith('mutation'):
+            raise NotImplementedError(
+                'Download of Mutation dataset currently not implemented!')
         else:
             raise ValueError(
                 'Incorrect choice of dataset! Must chose qm9/md17!')
