@@ -13,6 +13,7 @@ def covariance_test(model, data, siamese=False):
     targets_rotout, outputs_rotin = [], []
 
     if siamese:
+        logging.info('Testing a siamese network.')
         device, dtype = data['positions1'].device, data['positions1'].dtype
     else:
         device, dtype = data['positions'].device, data['positions'].dtype
@@ -22,13 +23,14 @@ def covariance_test(model, data, siamese=False):
     D = SO3WignerD(D).to(model.device, model.dtype)
 
     data_rotout = data
-
     data_rotin = {key: val.clone() if torch.is_tensor(val) else None for key, val in data.items()}
+
     if siamese:
         data_rotin['positions1'] = rot.rotate_cart_vec(R, data_rotin['positions1'])
         data_rotin['positions2'] = rot.rotate_cart_vec(R, data_rotin['positions2'])
     else:
         data_rotin['positions'] = rot.rotate_cart_vec(R, data_rotin['positions'])
+
     outputs_rotout, reps_rotout, _ = model(data_rotout, covariance_test=True)
     outputs_rotin, reps_rotin, _ = model(data_rotin, covariance_test=True)
 
@@ -57,23 +59,50 @@ def covariance_test(model, data, siamese=False):
                                 .format(lvl_idx, ell_idx, ell_norm, ell_mean, ell_max))
 
 
-def permutation_test(model, data):
+def permutation_test(model, data, siamese=False):
     logging.info('Beginning permutation test!')
 
-    mask = data['atom_mask']
-
-    # Generate a list of indices for each molecule.
-    # We will generate a permutation only for the atoms that exist (are not masked.)
-    perm = 1*torch.arange(mask.shape[1]).expand(mask.shape[0], -1)
-    for idx in range(mask.shape[0]):
-        num_atoms = (mask[idx, :].long()).sum()
-        perm[idx, :num_atoms] = torch.randperm(num_atoms)
-    apply_perm = lambda mat: torch.stack([mat[idx, p] for (idx, p) in enumerate(perm)])
-
-    assert((mask == apply_perm(mask)).all())
-
     data_noperm = data
-    data_perm = {key: apply_perm(val) if torch.is_tensor(val) and val.dim() > 1 else val for key, val in data.items()}
+
+    if siamese:
+
+        logging.info('Testing a siamese network.')
+
+        mask1 = data['atom_mask1']
+        # Generate a list of indices for each molecule.
+        perm1 = 1*torch.arange(mask1.shape[1]).expand(mask1.shape[0], -1)
+        for idx in range(mask1.shape[0]):
+            num_atoms1 = (mask1[idx, :].long()).sum()
+            perm1[idx, :num_atoms1] = torch.randperm(num_atoms1)
+        # apply the permutation
+        apply_perm1 = lambda mat: torch.stack([mat[idx, p] for (idx, p) in enumerate(perm1)])
+        assert((mask1 == apply_perm1(mask1)).all())
+        data_perm = {key: apply_perm1(val) if torch.is_tensor(val) and val.dim() > 1 and key[-1]=='1' else val for key, val in data.items()}
+
+        mask2 = data['atom_mask2']
+        # Generate a list of indices for each molecule.
+        perm2 = 1*torch.arange(mask2.shape[1]).expand(mask2.shape[0], -1)
+        for idx in range(mask2.shape[0]):
+            num_atoms2 = (mask2[idx, :].long()).sum()
+            perm2[idx, :num_atoms2] = torch.randperm(num_atoms2)
+        # apply the permutation
+        apply_perm2 = lambda mat: torch.stack([mat[idx, p] for (idx, p) in enumerate(perm2)])
+        assert((mask2 == apply_perm2(mask2)).all())
+        data_perm = {key: apply_perm2(val) if torch.is_tensor(val) and val.dim() > 1 and key[-1]=='2' else val for key, val in data_perm.items()}
+
+    else:
+
+        mask = data['atom_mask']
+        # Generate a list of indices for each molecule.
+        # We will generate a permutation only for the atoms that exist (are not masked.)
+        perm = 1*torch.arange(mask.shape[1]).expand(mask.shape[0], -1)
+        for idx in range(mask.shape[0]):
+            num_atoms = (mask[idx, :].long()).sum()
+            perm[idx, :num_atoms] = torch.randperm(num_atoms)
+        # apply the permutation
+        apply_perm = lambda mat: torch.stack([mat[idx, p] for (idx, p) in enumerate(perm)])
+        assert((mask == apply_perm(mask)).all())
+        data_perm = {key: apply_perm(val) if torch.is_tensor(val) and val.dim() > 1 and key[-1]=='1' else val for key, val in data.items()}
 
     outputs_perm = model(data_perm)
     outputs_noperm = model(data_noperm)
@@ -107,8 +136,9 @@ def cormorant_tests(model, dataloader, args, tests=['covariance'], charge_scale=
     data = next(iter(dataloader))
 
     covariance_test(model, data, siamese=siamese)
-    permutation_test(model, data)
-    batch_test(model, data)
+    permutation_test(model, data, siamese=siamese)
+    if not siamese:
+        batch_test(model, data)
 
     logging.info('Test complete!')
 

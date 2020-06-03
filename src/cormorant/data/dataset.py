@@ -76,6 +76,7 @@ class ProcessedDataset(Dataset):
 
     def calc_stats(self):
         self.stats = {key: (val.mean(), val.std()) for key, val in self.data.items() if type(val) is torch.Tensor and val.dim() == 1 and val.is_floating_point()}
+        print(self.stats)
 
     def convert_units(self, units_dict):
         for key in self.data.keys():
