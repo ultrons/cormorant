@@ -2,7 +2,8 @@
 Overview
 ========
 
-This is the home of the cormorant software package for learning on atomic environments.
+This is the Cormorant software package for learning on atomic environments, adapted for the needs of the Dror Lab at Stanford University.
+We added models for additional types of datasets as well as the necessary features, in particular the possibilities to perform classification tasks and to use a Siamese network architecture.
 
 
 Documentation
@@ -30,14 +31,6 @@ can also be installed in "development mode" using the command::
 
     python setup.py develop
 
-Cormorant is also installable from source using pip::
-
-    pip install cormorant .
-
-and for "development mode" with::
-
-    pip install cormorant -e .
-
 
 Training example
 ----------------
@@ -55,11 +48,13 @@ can train both the datasets QM9 and MD17, and can also be extended to more gener
 Note that if no GPU is available, the the training script will throw an error.
 To force CPU-based training, add the : --cpu: flag
 
+Examples for other models/datasets will be published soon at a dedicated repository.
+
 ================
 Architecture
 ================
 
 A more detailed description of the Cormorant architecture is available in `the Cormorant paper <https://arxiv.org/abs/1906.04015>`_.
 
-The version here was extended to work not only on regression but also on classification tasks.
+The version here was extended to work not only on regression but also on classification tasks and with a Siamese network architecture.
 
