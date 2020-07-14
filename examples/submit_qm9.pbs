@@ -1,0 +1,17 @@
+#!/usr/bin/sh  
+
+module load openmpi 
+#module load cuda/10.1
+#module load anaconda3/5.2
+
+which sh
+
+. "/SFS/user/ry/voegelem/anaconda3/etc/profile.d/conda.sh"
+
+conda activate cormorant
+
+cd /SFS/user/ry/voegelem/cormorant/examples
+
+mpirun -np 1 python train_qm9.py --data data
+
+
