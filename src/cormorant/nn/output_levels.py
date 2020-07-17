@@ -139,6 +139,62 @@ class OutputLinear(nn.Module):
         return predict
 
 
+class OutputLinearMeanPool(nn.Module):
+    """
+    Module to create prediction based upon a set of rotationally invariant
+    atom feature vectors. This is performed in a permutation invariant way
+    by using a (batch-masked) MEAN over all atoms, and then applying a
+    linear mixing layer to predict a single output.
+
+    Parameters
+    ----------
+    num_scalars : :class:`int`
+        Number scalars that will be used in the prediction at the output
+        of the network.
+    bias : :class:`bool`, optional
+        Include a bias term in the linear mixing level.
+    device : :class:`torch.device`, optional
+        Device to instantite the module to.
+    dtype : :class:`torch.dtype`, optional
+        Data type to instantite the module to.
+    """
+    def __init__(self, num_scalars, bias=True, device=torch.device('cpu'), dtype=torch.float):
+        super(OutputLinearMeanPool, self).__init__()
+
+        self.num_scalars = num_scalars
+        self.bias = bias
+
+        self.lin = nn.Linear(2*num_scalars, 1, bias=bias)
+        self.lin.to(device=device, dtype=dtype)
+
+        self.zero = torch.tensor(0, dtype=dtype, device=device)
+
+    def forward(self, atom_scalars, atom_mask):
+        """
+        Forward step for :class:`OutputLinear`
+
+        Parameters
+        ----------
+        atom_scalars : :class:`torch.Tensor`
+            Scalar features for each atom used to predict the final learning target.
+        atom_mask : :class:`torch.Tensor`
+            Unused. Included only for pedagogical purposes.
+
+        Returns
+        -------
+        predict : :class:`torch.Tensor`
+            Tensor used for predictions.
+        """
+        s = atom_scalars.shape
+        atom_scalars = atom_scalars.view((s[0], s[1], -1)).mean(1)  # No masking needed b/c summing over atoms
+
+        predict = self.lin(atom_scalars)
+
+        predict = predict.squeeze(-1)
+
+        return predict
+
+
 class OutputPMLP(nn.Module):
     """
     Module to create prediction based upon a set of rotationally invariant

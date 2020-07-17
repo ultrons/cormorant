@@ -12,6 +12,6 @@ conda activate cormorant
 
 cd /SFS/user/ry/voegelem/cormorant/examples
 
-mpirun -np 1 python train_md17.py --data data
+mpirun -np 1 python train_md17.py --data data 
 
 

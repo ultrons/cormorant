@@ -107,8 +107,11 @@ def init_file_paths(args):
     elif args.dataset.startswith('mutation'):
        if not args.target:
             args.target = 'label'
+    elif args.dataset.startswith('herg'):
+       if not args.target:
+            args.target = 'act_transf'
     else:
-        raise ValueError('Dataset must be qm9 or md17!')
+        raise ValueError('Dataset not recognized!')
 
     logger.info('Initializing simulation based upon argument string:')
     logger.info(' '.join([arg for arg in sys.argv]))

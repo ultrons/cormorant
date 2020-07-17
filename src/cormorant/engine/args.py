@@ -20,7 +20,7 @@ def setup_shared_args(parser):
     """
     # Optimizer options
     parser.add_argument('--num-epoch', type=int, default=255, metavar='N',
-                        help='number of epochs to train (default: 511)')
+                        help='number of epochs to train (default: 255)')
     parser.add_argument('--batch-size', '-bs', type=int, default=25, metavar='N',
                         help='Mini-batch size (default: 25)')
     parser.add_argument('--alpha', type=float, default=0.9, metavar='N',
@@ -221,6 +221,9 @@ def setup_argparse(dataset):
                             help='override the condition that all datasets need the same atom species.')
         parser.add_argument('--num_classes', type=int, default=2,
                             help='number of classes for the classification.')
+    elif dataset == "herg":
+        parser.add_argument('--ignore_check', action=BoolArg, default=False,
+                            help='override the condition that all datasets need the same atom species.')
     else:
         raise ValueError("Dataset is not recognized.")
     return parser
