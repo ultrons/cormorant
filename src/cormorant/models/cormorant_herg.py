@@ -112,7 +112,9 @@ class CormorantHERG(CGModule):
         num_scalars_atom = self.get_scalars_atom.num_scalars
         num_scalars_edge = self.get_scalars_edge.num_scalars
 
-        self.output_layer_atom = OutputLinear(num_scalars_atom, bias=True,
+#        self.output_layer_atom = OutputLinear(num_scalars_atom, bias=True,
+#                                              device=self.device, dtype=self.dtype)
+        self.output_layer_atom = OutputLinearMeanPool(num_scalars_atom, bias=True,
                                               device=self.device, dtype=self.dtype)
         self.output_layer_edge = NoLayer()
 

@@ -132,6 +132,8 @@ class OutputLinear(nn.Module):
         s = atom_scalars.shape
         atom_scalars = atom_scalars.view((s[0], s[1], -1)).sum(1)  # No masking needed b/c summing over atoms
 
+        print('atom_scalars:', atom_scalars)
+
         predict = self.lin(atom_scalars)
 
         predict = predict.squeeze(-1)
@@ -185,13 +187,15 @@ class OutputLinearMeanPool(nn.Module):
         predict : :class:`torch.Tensor`
             Tensor used for predictions.
         """
+
+        atom_mask = atom_mask.unsqueeze(-1)
+
         s = atom_scalars.shape
-        atom_scalars = atom_scalars.view((s[0], s[1], -1)).mean(1)  # No masking needed b/c summing over atoms
+        atom_scalars = atom_scalars.view((s[0], s[1], -1)).sum(1)/atom_mask.sum(1)
 
         predict = self.lin(atom_scalars)
-
         predict = predict.squeeze(-1)
-
+        
         return predict
 
 
