@@ -17,7 +17,7 @@ ACCURACY = lambda predict, target : (predict == target).float().mean()
 import logging
 logger = logging.getLogger(__name__)
 
-torch.autograd.set_detect_anomaly(True)
+#torch.autograd.set_detect_anomaly(True)
 
 
 class Engine:
