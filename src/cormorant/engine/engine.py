@@ -99,7 +99,7 @@ class Engine:
 
         logging.info('Best loss from checkpoint: {} at epoch {}'.format(self.best_loss, self.epoch))
 
-    def evaluate(self, splits=['train', 'valid', 'test'], best=True, final=True):
+    def evaluate(self, splits=['train', 'valid', 'test'], best=True, final=True, initial=False):
         """
         Evaluate model on training/validation/testing splits.
 
@@ -110,6 +110,15 @@ class Engine:
         if not self.args.save:
             logging.info('No model saved! Cannot give final status.')
             return
+
+        # Evaluate initial model (before training)
+        if initial:
+            logging.info('Getting predictions for initial model.')
+
+            # Loop over splits, predict, and output/log predictions
+            for split in splits:
+                predict, targets = self.predict(split)
+                self.log_predict(predict, targets, split, description='Initial')
 
         # Evaluate final model (at end of training)
         if final:
@@ -349,7 +358,10 @@ class Engine:
 
         datastrings = {'train': 'Training', 'test': 'Testing', 'valid': 'Validation'}
 
-        if epoch >= 0:
+        if description == 'Initial':
+            suffix = 'initial'
+            logging.info('Initial Prediction Complete! {} {} Loss: {:8.4f} {:8.4f}   w/units: {:8.4f} {:8.4f}'.format(description, datastrings[dataset], log1, log2, log3, log4))
+        elif epoch >= 0:
             suffix = 'final'
             logging.info('Epoch: {} Complete! {} {} Loss: {:8.4f} {:8.4f}   w/units: {:8.4f} {:8.4f}'.format(epoch+1, description, datastrings[dataset], log1, log2, log3, log4))
         else:
