@@ -51,13 +51,14 @@ class MixReps(CGModule):
         self.tau_out = SO3Tau(tau_out)
         self.real = real
 
-        if weight_init is 'randn':
+        print('weight_init:', weight_init)
+        if weight_init == 'randn':
             weights = SO3Weight.randn(self.tau_in, self.tau_out, device=device, dtype=dtype)
-        elif weight_init is 'zeros':
+        elif weight_init == 'zeros':
             weights = SO3Weight.zeros(self.tau_in, self.tau_out, device=device, dtype=dtype)
-        elif weight_init is 'ones':
+        elif weight_init == 'ones':
             weights = SO3Weight.ones(self.tau_in, self.tau_out, device=device, dtype=dtype)
-        elif weight_init is 'rand':
+        elif weight_init == 'rand':
             weights = SO3Weight.rand(self.tau_in, self.tau_out, device=device, dtype=dtype)
             weights = 2*weights - 1
         else:
