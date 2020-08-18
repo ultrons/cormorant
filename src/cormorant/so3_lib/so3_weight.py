@@ -97,17 +97,6 @@ class SO3Weight(SO3Tensor):
     @staticmethod
     def zeros(tau_in, tau_out, device=None, dtype=None, requires_grad=False):
         """
-        Factory method to create a new random :obj:`SO3Weight`.
-        """
-
-        shapes = [(t2, t1, 2) for t1, t2 in zip(tau_in, tau_out)]
-
-        return SO3Weight([torch.randn(shape, device=device, dtype=dtype,
-                          requires_grad=requires_grad) for shape in shapes])
-
-    @staticmethod
-    def zeros(tau_in, tau_out, device=None, dtype=None, requires_grad=False):
-        """
         Factory method to create a new all-zeros :obj:`SO3Weight`.
         """
 
