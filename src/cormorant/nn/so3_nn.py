@@ -41,7 +41,7 @@ class MixReps(CGModule):
         Data type to initialize weights to.
 
     """
-    def __init__(self, tau_in, tau_out, real=False, weight_init='randn', gain=1,
+    def __init__(self, tau_in, tau_out, real=False, weight_init='rand', gain=1,
                  device=None, dtype=None):
         super().__init__(device=device, dtype=dtype)
         tau_in = SO3Tau(tau_in)
@@ -183,7 +183,7 @@ class CatMixReps(CGModule):
 
     """
     def __init__(self, taus_in, tau_out, maxl=None,
-                 real=False, weight_init='randn', gain=1,
+                 real=False, weight_init='rand', gain=1,
                  device=None, dtype=None):
         super().__init__(device=device, dtype=dtype)
 

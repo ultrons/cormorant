@@ -36,7 +36,7 @@ class CormorantCG(CGModule):
             # First add the edge, since the output type determines the next level
             edge_lvl = CormorantEdgeLevel(tau_atom, tau_edge, tau_pos[level], num_channels[level], max_sh[level],
                                           cutoff_type, hard_cut_rad[level], soft_cut_rad[level], soft_cut_width[level],
-                                          gaussian_mask=gaussian_mask, device=device, dtype=dtype)
+                                          weight_init, gaussian_mask=gaussian_mask, device=device, dtype=dtype)
             edge_levels.append(edge_lvl)
             tau_edge = edge_lvl.tau
 

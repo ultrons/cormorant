@@ -39,6 +39,8 @@ class CormorantEdgeLevel(CGModule):
         `gaussian_mask` to be passed to :class:`cormorant.nn.MaskLevel`
     cat : :obj:`bool`
         Concatenate all the scalars in :class:`cormorant.nn.DotMatrix`
+    weight_init : :obj:`str`
+        Weight initialization function.
     device : :obj:`torch.device`
         Device to initialize the level to
     dtype : :obj:`torch.dtype`
@@ -46,7 +48,7 @@ class CormorantEdgeLevel(CGModule):
     """
     def __init__(self, tau_atom, tau_edge, tau_pos, nout, max_sh,
                  cutoff_type, hard_cut_rad, soft_cut_rad, soft_cut_width,
-                 cat=True, gaussian_mask=False,
+                 weight_init, cat=True, gaussian_mask=False,
                  device=None, dtype=None):
         super().__init__(device=device, dtype=dtype)
         device, dtype = self.device, self.dtype
@@ -58,7 +60,7 @@ class CormorantEdgeLevel(CGModule):
 
         # Set up mixing layer
         edge_taus = [tau for tau in (tau_edge, tau_dot, tau_pos) if tau is not None]
-        self.cat_mix = CatMixReps(edge_taus, nout, real=False, maxl=max_sh,
+        self.cat_mix = CatMixReps(edge_taus, nout, real=False, maxl=max_sh, weight_init=weight_init,
                                   device=self.device, dtype=self.dtype)
         self.tau = self.cat_mix.tau
 
