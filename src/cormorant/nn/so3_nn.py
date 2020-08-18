@@ -9,6 +9,10 @@ from functools import reduce
 from cormorant.cg_lib import CGModule
 from cormorant.so3_lib import so3_torch, SO3Weight, SO3Tau
 
+import logging
+logger = logging.getLogger(__name__)
+
+
 class MixReps(CGModule):
     """
     Module to linearly mix a representation from an input type `tau_in` to an
@@ -51,7 +55,7 @@ class MixReps(CGModule):
         self.tau_out = SO3Tau(tau_out)
         self.real = real
 
-        print('weight_init:', weight_init)
+        logging.info('Weight Initialization: {}'.format(weight_init))
         if weight_init == 'randn':
             weights = SO3Weight.randn(self.tau_in, self.tau_out, device=device, dtype=dtype)
         elif weight_init == 'zeros':
