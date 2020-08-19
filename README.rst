@@ -3,7 +3,7 @@ Overview
 ========
 
 This is the Cormorant software package for learning on atomic environments, adapted for the needs of the Dror Lab at Stanford University.
-We added models for additional types of datasets as well as the necessary features, in particular the possibilities to perform classification tasks and to use a Siamese network architecture.
+We added models for additional types of datasets as well as the necessary features, in particular the possibilities to perform classification tasks, to use a Siamese network architecture, and to put a boundary on the Clebsch-Gordan product (the central operation of this network architecture).
 
 
 Documentation
