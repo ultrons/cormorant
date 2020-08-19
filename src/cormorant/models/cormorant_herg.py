@@ -12,6 +12,8 @@ from cormorant.nn import InputLinear
 from cormorant.nn import OutputLinear, OutputLinearMeanPool, GetScalarsAtom
 from cormorant.nn import NoLayer
 
+import logging
+
 
 class CormorantHERG(CGModule):
     """
@@ -99,7 +101,7 @@ class CormorantHERG(CGModule):
         self.cormorant_cg = CormorantCG(maxl, max_sh, tau_in_atom, tau_in_edge,
                      tau_pos, num_cg_levels, num_channels, level_gain, weight_init,
                      cutoff_type, hard_cut_rad, soft_cut_rad, soft_cut_width,
-                     cat=True, gaussian_mask=False,
+                     cat=True, gaussian_mask=False, cgprod_bounded=True,
                      device=self.device, dtype=self.dtype, cg_dict=self.cg_dict)
 
         tau_cg_levels_atom = self.cormorant_cg.tau_levels_atom
@@ -112,11 +114,11 @@ class CormorantHERG(CGModule):
         num_scalars_atom = self.get_scalars_atom.num_scalars
         num_scalars_edge = self.get_scalars_edge.num_scalars
 
-#        self.output_layer_atom = OutputLinear(num_scalars_atom, bias=True,
-#                                              device=self.device, dtype=self.dtype)
         self.output_layer_atom = OutputLinearMeanPool(num_scalars_atom, bias=True,
-                                              device=self.device, dtype=self.dtype)
+                                                      device=self.device, dtype=self.dtype)
         self.output_layer_edge = NoLayer()
+
+        #self.bounding = nn.Tanh()
 
         logging.info('Model initialized. Number of parameters: {}'.format(
             sum([p.nelement() for p in self.parameters()])))
@@ -159,6 +161,8 @@ class CormorantHERG(CGModule):
         # Prediction in this case will depend only on the atom_scalars. Can make
         # it more general here.
         prediction = self.output_layer_atom(atom_scalars, atom_mask)
+
+        #prediction = 1000*self.bounding(0.001*prediction)
 
         # Covariance test
         if covariance_test:

@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 from math import inf
 
 from cormorant.cg_lib import CGModule, cg_product_tau
@@ -50,10 +51,11 @@ class CGProduct(CGModule):
 
     """
     def __init__(self, tau1=None, tau2=None,
-                 aggregate=False,
+                 aggregate=False, bounded=False,
                  minl=0, maxl=inf, cg_dict=None, dtype=None, device=None):
 
         self.aggregate = aggregate
+        self.bounded = bounded
 
         if (maxl == inf) and cg_dict:
             maxl = cg_dict.maxl
@@ -88,7 +90,7 @@ class CGProduct(CGModule):
         if self.tau2 and self.tau2 != SO3Tau.from_rep(rep2):
             raise ValueError('Input rep2 does not match predefined tau!')
 
-        return cg_product(self.cg_dict, rep1, rep2, maxl=self.maxl, minl=self.minl, aggregate=self.aggregate)
+        return cg_product(self.cg_dict, rep1, rep2, maxl=self.maxl, minl=self.minl, aggregate=self.aggregate, bounded=self.bounded)
 
     @property
     def tau_out(self):
@@ -117,7 +119,7 @@ class CGProduct(CGModule):
                                  '{} {}'.format(self.tau1, self.tau2))
 
 
-def cg_product(cg_dict, rep1, rep2, maxl=inf, minl=0, aggregate=False, ignore_check=False):
+def cg_product(cg_dict, rep1, rep2, maxl=inf, minl=0, aggregate=False, ignore_check=False, bounded=False):
     """
     Explicit function to calculate the Clebsch-Gordan product.
     See the documentation for CGProduct for more information.
@@ -178,6 +180,10 @@ def cg_product(cg_dict, rep1, rep2, maxl=inf, minl=0, aggregate=False, ignore_ch
                 new_rep[l].append(cg_decomp[idx])
 
     new_rep = [torch.cat(part, dim=-3) for part in new_rep if len(part) > 0]
+
+    if bounded:
+        bound_f = nn.Tanh()
+        new_rep = [bound_f(part) for part in new_rep]
 
     # TODO: Rewrite so ignore_check not necessary
     return SO3Vec(new_rep, ignore_check=ignore_check)

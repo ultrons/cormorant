@@ -15,7 +15,7 @@ class CormorantCG(CGModule):
                  num_cg_levels, num_channels,
                  level_gain, weight_init,
                  cutoff_type, hard_cut_rad, soft_cut_rad, soft_cut_width,
-                 cat=True, gaussian_mask=False,
+                 cat=True, gaussian_mask=False, cgprod_bounded=False,
                  device=None, dtype=None, cg_dict=None):
         super().__init__(device=device, dtype=dtype, cg_dict=cg_dict)
         device, dtype, cg_dict = self.device, self.dtype, self.cg_dict
@@ -33,6 +33,7 @@ class CormorantCG(CGModule):
         tau_atom, tau_edge = tau_atom_in, tau_edge_in
 
         for level in range(num_cg_levels):
+
             # First add the edge, since the output type determines the next level
             edge_lvl = CormorantEdgeLevel(tau_atom, tau_edge, tau_pos[level], num_channels[level], max_sh[level],
                                           cutoff_type, hard_cut_rad[level], soft_cut_rad[level], soft_cut_width[level],
@@ -42,7 +43,7 @@ class CormorantCG(CGModule):
 
             # Now add the NBody level
             atom_lvl = CormorantAtomLevel(tau_atom, tau_edge, maxl[level], num_channels[level+1],
-                                          level_gain[level], weight_init,
+                                          level_gain[level], weight_init, cgprod_bounded=cgprod_bounded,
                                           device=device, dtype=dtype, cg_dict=cg_dict)
             atom_levels.append(atom_lvl)
             tau_atom = atom_lvl.tau
@@ -94,6 +95,7 @@ class CormorantCG(CGModule):
         edges_all = []
 
         for idx, (atom_level, edge_level, max_sh) in enumerate(zip(self.atom_levels, self.edge_levels, self.max_sh)):
+
             edge_net = edge_level(edge_net, atom_reps, rad_funcs[idx], edge_mask, norms)
             edge_reps = edge_net * sph_harm[:max_sh+1]
             atom_reps = atom_level(atom_reps, edge_reps, atom_mask)
@@ -102,3 +104,4 @@ class CormorantCG(CGModule):
             edges_all.append(edge_net)
 
         return atoms_all, edges_all
+

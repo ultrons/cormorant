@@ -6,6 +6,9 @@ from cormorant.cg_lib import CGProduct, CGModule
 from cormorant.nn import MaskLevel
 from cormorant.nn import CatMixReps, DotMatrix
 
+import logging
+
+
 class CormorantEdgeLevel(CGModule):
     """
     Scalar edge level as part of the Clebsch-Gordan layers are described in the
@@ -69,6 +72,7 @@ class CormorantEdgeLevel(CGModule):
                                     gaussian_mask=gaussian_mask, device=self.device, dtype=self.dtype)
 
     def forward(self, edge_in, atom_reps, pos_funcs, base_mask, norms):
+
         # Caculate the dot product matrix.
         edge_dot = self.dot_matrix(atom_reps)
 
@@ -104,6 +108,8 @@ class CormorantAtomLevel(CGModule):
         Weight initialization function.
     level_gain : :obj:`int`
         Gain for the weights at each level.
+    cgprod_bounded : :obj:`bool`
+        Sets the CG product to bounded. Default: False.
 
     device : :obj:`torch.device`
         Device to initialize the level to
@@ -114,7 +120,7 @@ class CormorantAtomLevel(CGModule):
 
     """
     def __init__(self, tau_in, tau_pos, maxl, num_channels, level_gain, weight_init,
-                 device=None, dtype=None, cg_dict=None):
+                 cgprod_bounded=False, device=None, dtype=None, cg_dict=None):
         super().__init__(maxl=maxl, device=device, dtype=dtype, cg_dict=cg_dict)
         device, dtype, cg_dict = self.device, self.dtype, self.cg_dict
 
@@ -123,10 +129,12 @@ class CormorantAtomLevel(CGModule):
 
         # Operations linear in input reps
         self.cg_aggregate = CGProduct(tau_pos, tau_in, maxl=self.maxl, aggregate=True,
+                                      bounded=cgprod_bounded,
                                       device=self.device, dtype=self.dtype, cg_dict=self.cg_dict)
         tau_ag = list(self.cg_aggregate.tau)
 
-        self.cg_power = CGProduct(tau_in, tau_in, maxl=self.maxl,
+        self.cg_power = CGProduct(tau_in, tau_in, maxl=self.maxl, 
+                                  bounded=cgprod_bounded,
                                   device=self.device, dtype=self.dtype, cg_dict=self.cg_dict)
         tau_sq = list(self.cg_power.tau)
 
@@ -153,6 +161,7 @@ class CormorantAtomLevel(CGModule):
         reps_out : SO3Vec
             Output representation of the atomic environment.
         """
+
         # Aggregate information based upon edge reps
         reps_ag = self.cg_aggregate(edge_reps, atom_reps)
 
