@@ -230,6 +230,12 @@ def setup_argparse(dataset):
     elif dataset == "esol":
         parser.add_argument('--ignore_check', action=BoolArg, default=False,
                             help='override the condition that all datasets need the same atom species.')
+    elif dataset == "freesolv":
+        parser.add_argument('--ignore_check', action=BoolArg, default=False,
+                            help='override the condition that all datasets need the same atom species.')
+    elif dataset == "lipophilicity":
+        parser.add_argument('--ignore_check', action=BoolArg, default=False,
+                            help='override the condition that all datasets need the same atom species.')
     else:
         raise ValueError("Dataset is not recognized.")
     return parser

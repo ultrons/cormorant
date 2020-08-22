@@ -8,5 +8,7 @@ from cormorant.models.cormorant_mutation import CormorantMutation
 from cormorant.models.cormorant_resdel import CormorantResDel
 from cormorant.models.cormorant_herg import CormorantHERG
 from cormorant.models.cormorant_esol import CormorantESOL
+from cormorant.models.cormorant_freesolv import CormorantFreeSolv
+from cormorant.models.cormorant_lipophilicity import CormorantLipophilicity
 
 from cormorant.models.autotest import cormorant_tests

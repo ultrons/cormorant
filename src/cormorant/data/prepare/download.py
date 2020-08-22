@@ -85,6 +85,12 @@ def prepare_dataset(datadir, dataset, suffix='', subset=None, splits=None, clean
         elif dataset.lower().startswith('esol'):
             raise NotImplementedError(
                 'Download of ESOL dataset currently not implemented!')
+        elif dataset.lower().startswith('freesolv'):
+            raise NotImplementedError(
+                'Download of FreeSolv dataset currently not implemented!')
+        elif dataset.lower().startswith('lipophilicity'):
+            raise NotImplementedError(
+                'Download of Lipophilicity dataset currently not implemented!')
         else:
             raise ValueError(
                 'Incorrect choice of dataset! Must chose qm9/md17!')
