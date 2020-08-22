@@ -67,8 +67,6 @@ class CormorantPDBBind(CGModule):
         super().__init__(maxl=max(maxl+max_sh), device=device, dtype=dtype, cg_dict=cg_dict)
         device, dtype, cg_dict = self.device, self.dtype, self.cg_dict
 
-        print('CGDICT', cg_dict.maxl)
-
         self.num_cg_levels = num_cg_levels
         self.num_channels = num_channels
         self.charge_power = charge_power
@@ -87,9 +85,6 @@ class CormorantPDBBind(CGModule):
         num_scalars_in = self.num_species * (self.charge_power + 1)
         num_scalars_out = num_channels[0]
 
-#        self.input_func_atom = InputMPNN(num_scalars_in, num_scalars_out, num_mpnn_layers,
-#                                         soft_cut_rad[0], soft_cut_width[0], hard_cut_rad[0],
-#                                         activation=activation, device=self.device, dtype=self.dtype)
         self.input_func_atom = InputLinear(num_scalars_in, num_scalars_out,
                                            device=self.device, dtype=self.dtype)
         self.input_func_edge = NoLayer()
@@ -100,7 +95,7 @@ class CormorantPDBBind(CGModule):
         self.cormorant_cg = CormorantCG(maxl, max_sh, tau_in_atom, tau_in_edge,
                      tau_pos, num_cg_levels, num_channels, level_gain, weight_init,
                      cutoff_type, hard_cut_rad, soft_cut_rad, soft_cut_width,
-                     cat=True, gaussian_mask=False,
+                     cat=True, gaussian_mask=False, cgprod_bounded=True,
                      device=self.device, dtype=self.dtype, cg_dict=self.cg_dict)
 
         tau_cg_levels_atom = self.cormorant_cg.tau_levels_atom
