@@ -110,6 +110,9 @@ def init_file_paths(args):
     elif args.dataset.startswith('herg'):
        if not args.target:
             args.target = 'act_transf'
+    elif args.dataset.startswith('esol'):
+       if not args.target:
+            args.target = 'log_sol'
     else:
         raise ValueError('Dataset not recognized!')
 

@@ -9,7 +9,7 @@ from cormorant.data.dataset import ProcessedDataset
 from cormorant.data.prepare import prepare_dataset
 
 
-def initialize_datasets(args, datadir, dataset, subset=None, splits=None,
+def initialize_datasets(args, datadir, dataset, suffix='', subset=None, splits=None,
                         force_download=False, subtract_thermo=False, ignore_check=False):
     """
     Initialize datasets.
@@ -55,7 +55,7 @@ def initialize_datasets(args, datadir, dataset, subset=None, splits=None,
 
     # Download and process dataset. Returns datafiles.
     datafiles = prepare_dataset(
-        datadir, dataset, subset, splits, force_download=force_download)
+        datadir, dataset, suffix, subset, splits, force_download=force_download)
 
     # Load downloaded/processed datasets
     datasets = {}

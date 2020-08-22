@@ -29,7 +29,7 @@ class Engine:
     Roughly based upon TorchNet
     """
     def __init__(self, args, dataloaders, model, loss_fn, optimizer, scheduler, restart_epochs, device, dtype, 
-                 task='regression', clip_value=0.2, log_test=False):
+                 task='regression', clip_value=None, log_test=False):
 
         self.args = args
         self.dataloaders = dataloaders

@@ -6,7 +6,7 @@ from math import inf
 
 def setup_shared_args(parser):
     """
-    Sets up the argparse object for the qm9 dataset
+    Sets up the argparse object 
     
     Parameters 
     ----------
@@ -106,6 +106,9 @@ def setup_shared_args(parser):
     # Directory to read and save data from
     parser.add_argument('--datadir', type=str, default='data/',
                         help='Directory to look up data from. (default: data/)')
+    # Suffix for datset folder
+    parser.add_argument('--data_suffix', type=str, default='', 
+                        help='The dataset folder is the dataset name plus this suffix. (default: (empty))')
 
     # Dataset options
     parser.add_argument('--num-train', type=int, default=-1, metavar='N',
@@ -222,6 +225,9 @@ def setup_argparse(dataset):
         parser.add_argument('--num_classes', type=int, default=2,
                             help='number of classes for the classification.')
     elif dataset == "herg":
+        parser.add_argument('--ignore_check', action=BoolArg, default=False,
+                            help='override the condition that all datasets need the same atom species.')
+    elif dataset == "esol":
         parser.add_argument('--ignore_check', action=BoolArg, default=False,
                             help='override the condition that all datasets need the same atom species.')
     else:

@@ -5,7 +5,7 @@ from cormorant.data.prepare.md17 import download_dataset_md17
 from cormorant.data.prepare.qm9 import download_dataset_qm9
 
 
-def prepare_dataset(datadir, dataset, subset=None, splits=None, cleanup=True, force_download=False):
+def prepare_dataset(datadir, dataset, suffix='', subset=None, splits=None, cleanup=True, force_download=False):
     """
     Download and process dataset.
 
@@ -37,9 +37,9 @@ def prepare_dataset(datadir, dataset, subset=None, splits=None, cleanup=True, fo
 
     # If datasets have subsets,
     if subset:
-        dataset_dir = [datadir, dataset, subset]
+        dataset_dir = [datadir, dataset+suffix, subset]
     else:
-        dataset_dir = [datadir, dataset]
+        dataset_dir = [datadir, dataset+suffix]
 
     # Names of splits, based upon keys if split dictionary exists, elsewise default to train/valid/test.
     split_names = splits.keys() if splits is not None else [
@@ -82,6 +82,9 @@ def prepare_dataset(datadir, dataset, subset=None, splits=None, cleanup=True, fo
         elif dataset.lower().startswith('mutation'):
             raise NotImplementedError(
                 'Download of Mutation dataset currently not implemented!')
+        elif dataset.lower().startswith('esol'):
+            raise NotImplementedError(
+                'Download of ESOL dataset currently not implemented!')
         else:
             raise ValueError(
                 'Incorrect choice of dataset! Must chose qm9/md17!')
