@@ -94,7 +94,7 @@ class CormorantMutation(CGModule):
         self.cormorant_cg = CormorantCG(maxl, max_sh, tau_in_atom, tau_in_edge,
                      tau_pos, num_cg_levels, num_channels, level_gain, weight_init,
                      cutoff_type, hard_cut_rad, soft_cut_rad, soft_cut_width,
-                     cat=True, gaussian_mask=False,
+                     cat=True, gaussian_mask=False, cgprod_bounded=True,
                      device=self.device, dtype=self.dtype, cg_dict=self.cg_dict)
 
         tau_cg_levels_atom = self.cormorant_cg.tau_levels_atom
