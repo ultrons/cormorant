@@ -107,7 +107,7 @@ def setup_shared_args(parser):
     parser.add_argument('--datadir', type=str, default='data/',
                         help='Directory to look up data from. (default: data/)')
     # Suffix for datset folder
-    parser.add_argument('--data_suffix', type=str, default='', 
+    parser.add_argument('--ddir-suffix', type=str, default='', 
                         help='The dataset folder is the dataset name plus this suffix. (default: (empty))')
 
     # Dataset options
@@ -187,6 +187,9 @@ def setup_shared_args(parser):
     parser.add_argument('--target', type=str, default='',
                         help='Learning target for a dataset (such as qm9) with multiple options.')
 
+    parser.add_argument('--ignore-check', action=BoolArg, default=False,
+                        help='override the condition that all datasets need the same atom species. Use with caution!')
+
     return parser
 
 def setup_argparse(dataset):
@@ -203,7 +206,7 @@ def setup_argparse(dataset):
     parser : :class:`argparse.ArgumentParser`
         Argument Parser with arguments.
     """
-    parser = argparse.ArgumentParser(description='Cormorant network options for the md17 dataset.')
+    parser = argparse.ArgumentParser(description='Cormorant network options.')
     parser = setup_shared_args(parser)
     if dataset == "md17":
         parser.add_argument('--subset', '--molecule', type=str, default='',
@@ -211,31 +214,15 @@ def setup_argparse(dataset):
     elif dataset == "qm9":
         parser.add_argument('--subtract-thermo', action=BoolArg, default=True,
                             help='Subtract thermochemical energy from relvant learning targets in QM9 dataset.')
-    elif dataset == "pdbbind":
-        parser.add_argument('--ignore_check', action=BoolArg, default=False,
-                            help='override the condition that all datasets need the same atom species.')
     elif dataset == "resdel":
-        parser.add_argument('--ignore_check', action=BoolArg, default=False,
-                            help='override the condition that all datasets need the same atom species.')
         parser.add_argument('--num_classes', type=int, default=20,
                             help='number of classes for the classification.')
     elif dataset == "mutation":
-        parser.add_argument('--ignore_check', action=BoolArg, default=False,
-                            help='override the condition that all datasets need the same atom species.')
         parser.add_argument('--num_classes', type=int, default=2,
                             help='number of classes for the classification.')
-    elif dataset == "herg":
-        parser.add_argument('--ignore_check', action=BoolArg, default=False,
-                            help='override the condition that all datasets need the same atom species.')
-    elif dataset == "esol":
-        parser.add_argument('--ignore_check', action=BoolArg, default=False,
-                            help='override the condition that all datasets need the same atom species.')
-    elif dataset == "freesolv":
-        parser.add_argument('--ignore_check', action=BoolArg, default=False,
-                            help='override the condition that all datasets need the same atom species.')
-    elif dataset == "lipophilicity":
-        parser.add_argument('--ignore_check', action=BoolArg, default=False,
-                            help='override the condition that all datasets need the same atom species.')
+    # Other recognized datasets without additional options
+    elif dataset in ["pdbbind", "herg", "esol", "freesolv", "lipophilicity"]:
+        pass 
     else:
         raise ValueError("Dataset is not recognized.")
     return parser
