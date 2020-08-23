@@ -46,7 +46,8 @@ def init_argparse(dataset):
 
 def init_logger(args):
     if args.logfile:
-        handlers = [logging.FileHandler(args.logfile, mode='w'), logging.StreamHandler()]
+        out_mode = 'a' if args.load else 'w'
+        handlers = [logging.FileHandler(args.logfile, mode=out_mode), logging.StreamHandler()]
     else:
         handlers = [logging.StreamHandler()]
 
