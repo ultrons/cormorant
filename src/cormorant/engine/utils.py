@@ -120,6 +120,9 @@ def init_file_paths(args):
     elif args.dataset.startswith('lipophilicity'):
        if not args.target:
             args.target = 'exp'
+    elif args.dataset.startswith('aqsoldb'):
+       if not args.target:
+            args.target = 'logS'
     else:
         raise ValueError('Dataset not recognized!')
 

@@ -221,7 +221,7 @@ def setup_argparse(dataset):
         parser.add_argument('--num_classes', type=int, default=2,
                             help='number of classes for the classification.')
     # Other recognized datasets without additional options
-    elif dataset in ["pdbbind", "herg", "esol", "freesolv", "lipophilicity"]:
+    elif dataset in ["pdbbind", "herg", "esol", "freesolv", "lipophilicity", "aqsoldb"]:
         pass 
     else:
         raise ValueError("Dataset is not recognized.")

@@ -40,6 +40,7 @@ def prepare_dataset(datadir, dataset, suffix='', subset=None, splits=None, clean
         dataset_dir = [datadir, dataset+suffix, subset]
     else:
         dataset_dir = [datadir, dataset+suffix]
+    logging.info('Loading dataset from %s'%dataset_dir)
 
     # Names of splits, based upon keys if split dictionary exists, elsewise default to train/valid/test.
     split_names = splits.keys() if splits is not None else [
@@ -91,6 +92,9 @@ def prepare_dataset(datadir, dataset, suffix='', subset=None, splits=None, clean
         elif dataset.lower().startswith('lipophilicity'):
             raise NotImplementedError(
                 'Download of Lipophilicity dataset currently not implemented!')
+        elif dataset.lower().startswith('aqsoldb'):
+            raise NotImplementedError(
+                'Download of AqSolDB dataset currently not implemented!')
         else:
             raise ValueError(
                 'Incorrect choice of dataset! Must chose qm9/md17!')

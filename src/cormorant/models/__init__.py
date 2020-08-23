@@ -10,5 +10,6 @@ from cormorant.models.cormorant_herg import CormorantHERG
 from cormorant.models.cormorant_esol import CormorantESOL
 from cormorant.models.cormorant_freesolv import CormorantFreeSolv
 from cormorant.models.cormorant_lipophilicity import CormorantLipophilicity
+from cormorant.models.cormorant_aqsoldb import CormorantAqSolDB
 
 from cormorant.models.autotest import cormorant_tests
