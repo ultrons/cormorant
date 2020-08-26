@@ -95,6 +95,9 @@ def prepare_dataset(datadir, dataset, suffix='', subset=None, splits=None, clean
         elif dataset.lower().startswith('aqsoldb'):
             raise NotImplementedError(
                 'Download of AqSolDB dataset currently not implemented!')
+        elif dataset.lower().startswith('herg'):
+            raise NotImplementedError(
+                'Download of hERG dataset currently not implemented!')
         else:
             raise ValueError(
                 'Incorrect choice of dataset! Must chose qm9/md17!')
