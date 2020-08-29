@@ -119,7 +119,7 @@ class CGProduct(CGModule):
                                  '{} {}'.format(self.tau1, self.tau2))
 
 
-def cg_product(cg_dict, rep1, rep2, maxl=inf, minl=0, aggregate=False, ignore_check=False, bounded=False):
+def cg_product(cg_dict, rep1, rep2, maxl=inf, minl=0, aggregate=False, ignore_check=False, bounded=False, normalization='none'):
     """
     Explicit function to calculate the Clebsch-Gordan product.
     See the documentation for CGProduct for more information.
@@ -181,9 +181,27 @@ def cg_product(cg_dict, rep1, rep2, maxl=inf, minl=0, aggregate=False, ignore_ch
 
     new_rep = [torch.cat(part, dim=-3) for part in new_rep if len(part) > 0]
 
+
     if bounded:
+#        for part in new_rep: print(part.size())
         bound_f = nn.Tanh()
         new_rep = [bound_f(part) for part in new_rep]
+#        bound_f = nn.Sigmoid()
+#        new_rep = [2*bound_f(part)-1 for part in new_rep]
+
+    if normalization == 'normal':                                                                                                                                                  for part in new_rep:
+           for i in range(part.size()[0]):
+               part[i,:,:,:,:]/torch.norm(part[i,:,:,:,:])
+    elif normalization == 'relu':
+        relu = nn.ReLU()
+        for part in new_rep:
+            for i in range(part.size()[0]):
+                part[i,:,:,:,:]/(relu(torch.norm(part[i,:,:,:,:])-1)+1)
+    elif normalization == 'softplus':
+        softplus = nn.Softplus()
+        for part in new_rep:
+            for i in range(part.size()[0]):
+                part[i,:,:,:,:]/softplus(torch.norm(part[i,:,:,:,:]))
 
     # TODO: Rewrite so ignore_check not necessary
     return SO3Vec(new_rep, ignore_check=ignore_check)

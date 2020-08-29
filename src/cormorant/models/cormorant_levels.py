@@ -120,7 +120,8 @@ class CormorantAtomLevel(CGModule):
 
     """
     def __init__(self, tau_in, tau_pos, maxl, num_channels, level_gain, weight_init,
-                 cgprod_bounded=False, device=None, dtype=None, cg_dict=None):
+                 cgprod_bounded=False, device=None, dtype=None, cg_dict=None,
+                 cg_agg_normalization = 'none', cg_pow_normalization='none'):
         super().__init__(maxl=maxl, device=device, dtype=dtype, cg_dict=cg_dict)
         device, dtype, cg_dict = self.device, self.dtype, self.cg_dict
 
@@ -129,12 +130,12 @@ class CormorantAtomLevel(CGModule):
 
         # Operations linear in input reps
         self.cg_aggregate = CGProduct(tau_pos, tau_in, maxl=self.maxl, aggregate=True,
-                                      bounded=cgprod_bounded,
+                                      bounded=cgprod_bounded, normalization=cg_agg_normalization,
                                       device=self.device, dtype=self.dtype, cg_dict=self.cg_dict)
         tau_ag = list(self.cg_aggregate.tau)
 
         self.cg_power = CGProduct(tau_in, tau_in, maxl=self.maxl, 
-                                  bounded=cgprod_bounded,
+                                  bounded=cgprod_bounded, normalization=cg_pow_normalization,
                                   device=self.device, dtype=self.dtype, cg_dict=self.cg_dict)
         tau_sq = list(self.cg_power.tau)
 

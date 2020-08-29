@@ -16,6 +16,7 @@ class CormorantCG(CGModule):
                  level_gain, weight_init,
                  cutoff_type, hard_cut_rad, soft_cut_rad, soft_cut_width,
                  cat=True, gaussian_mask=False, cgprod_bounded=False,
+                 cg_agg_normalization='none', cg_pow_normalization='none',
                  device=None, dtype=None, cg_dict=None):
         super().__init__(device=device, dtype=dtype, cg_dict=cg_dict)
         device, dtype, cg_dict = self.device, self.dtype, self.cg_dict
@@ -43,7 +44,10 @@ class CormorantCG(CGModule):
 
             # Now add the NBody level
             atom_lvl = CormorantAtomLevel(tau_atom, tau_edge, maxl[level], num_channels[level+1],
-                                          level_gain[level], weight_init, cgprod_bounded=cgprod_bounded,
+                                          level_gain[level], weight_init, 
+                                          cgprod_bounded=cgprod_bounded,
+                                          cg_agg_normalization=cg_agg_normalization, 
+                                          cg_pow_normalization=cg_pow_normalization,
                                           device=device, dtype=dtype, cg_dict=cg_dict)
             atom_levels.append(atom_lvl)
             tau_atom = atom_lvl.tau
