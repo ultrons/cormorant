@@ -51,11 +51,12 @@ class CGProduct(CGModule):
 
     """
     def __init__(self, tau1=None, tau2=None,
-                 aggregate=False, bounded=False,
+                 aggregate=False, bounded=False, normalization='none',
                  minl=0, maxl=inf, cg_dict=None, dtype=None, device=None):
 
         self.aggregate = aggregate
         self.bounded = bounded
+        self.normalization = normalization
 
         if (maxl == inf) and cg_dict:
             maxl = cg_dict.maxl
@@ -90,7 +91,7 @@ class CGProduct(CGModule):
         if self.tau2 and self.tau2 != SO3Tau.from_rep(rep2):
             raise ValueError('Input rep2 does not match predefined tau!')
 
-        return cg_product(self.cg_dict, rep1, rep2, maxl=self.maxl, minl=self.minl, aggregate=self.aggregate, bounded=self.bounded)
+        return cg_product(self.cg_dict, rep1, rep2, maxl=self.maxl, minl=self.minl, aggregate=self.aggregate, bounded=self.bounded, normalization=self.normalization)
 
     @property
     def tau_out(self):
@@ -181,27 +182,29 @@ def cg_product(cg_dict, rep1, rep2, maxl=inf, minl=0, aggregate=False, ignore_ch
 
     new_rep = [torch.cat(part, dim=-3) for part in new_rep if len(part) > 0]
 
-
     if bounded:
-#        for part in new_rep: print(part.size())
         bound_f = nn.Tanh()
         new_rep = [bound_f(part) for part in new_rep]
 #        bound_f = nn.Sigmoid()
 #        new_rep = [2*bound_f(part)-1 for part in new_rep]
 
-    if normalization == 'normal':                                                                                                                                                  for part in new_rep:
+    if normalization == 'normal':
+        for part in new_rep:
            for i in range(part.size()[0]):
-               part[i,:,:,:,:]/torch.norm(part[i,:,:,:,:])
+               pc = part[i,:,:,:,:].clone()
+               part[i,:,:,:,:] = pc/torch.norm(pc)
     elif normalization == 'relu':
         relu = nn.ReLU()
         for part in new_rep:
             for i in range(part.size()[0]):
-                part[i,:,:,:,:]/(relu(torch.norm(part[i,:,:,:,:])-1)+1)
+                pc = part[i,:,:,:,:].clone()
+                part[i,:,:,:,:] = pc/(relu(torch.norm(pc)-1)+1)
     elif normalization == 'softplus':
         softplus = nn.Softplus()
         for part in new_rep:
             for i in range(part.size()[0]):
-                part[i,:,:,:,:]/softplus(torch.norm(part[i,:,:,:,:]))
+                pc = part[i,:,:,:,:].clone()
+                part[i,:,:,:,:] = pc/softplus(torch.norm(pc))
 
     # TODO: Rewrite so ignore_check not necessary
     return SO3Vec(new_rep, ignore_check=ignore_check)

@@ -46,9 +46,9 @@ class CormorantAqSolDB(CGModule):
     def __init__(self, maxl, max_sh, num_cg_levels, num_channels, num_species,
                  cutoff_type, hard_cut_rad, soft_cut_rad, soft_cut_width,
                  weight_init, level_gain, charge_power, basis_set,
-                 charge_scale, gaussian_mask, cgprod_bounded=False,
+                 charge_scale, gaussian_mask, top, input, num_mpnn_layers, 
+                 activation='leakyrelu', cgprod_bounded=False,
                  cg_agg_normalization='none', cg_pow_normalization='none',
-                 top, input, num_mpnn_layers, activation='leakyrelu',
                  device=None, dtype=None, cg_dict=None):
 
         logging.info('Initializing network!')
@@ -162,11 +162,9 @@ class CormorantAqSolDB(CGModule):
         atom_scalars = self.get_scalars_atom(atoms_all)
         edge_scalars = self.get_scalars_edge(edges_all)
 
-        # Prediction in this case will depend only on the atom_scalars. Can make
-        # it more general here.
+        # Prediction in this case will depend only on the atom_scalars.
+        # Can make it more general here.
         prediction = self.output_layer_atom(atom_scalars, atom_mask)
-
-        #prediction = 1000*self.bounding(0.001*prediction)
 
         # Covariance test
         if covariance_test:
@@ -219,3 +217,4 @@ def expand_var_list(var, num_cg_levels):
     else:
         raise ValueError('Incorrect type {}'.format(type(var)))
     return var_list
+

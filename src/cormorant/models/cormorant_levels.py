@@ -173,3 +173,4 @@ class CormorantAtomLevel(CGModule):
         reps_out = self.cat_mix([reps_ag, atom_reps, reps_sq])
 
         return reps_out
+
