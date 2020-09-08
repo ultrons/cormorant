@@ -189,6 +189,12 @@ def setup_shared_args(parser):
 
     parser.add_argument('--ignore-check', action=BoolArg, default=False,
                         help='override the condition that all datasets need the same atom species. Use with caution!')
+    parser.add_argument('--cgprod-bounded', action=BoolArg, default=False,
+                        help='Put a tanh boundary on the elements of the CG product (default: False).')
+    parser.add_argument('--cg-agg-normalization', type=str, default='none', 
+                        help='Normalization for the aggregation CG product (default: none).')
+    parser.add_argument('--cg_pow_normalization', type=str, default='none',
+                        help='Normalization for the non-linearity CG product (default: none).')
 
     return parser
 
