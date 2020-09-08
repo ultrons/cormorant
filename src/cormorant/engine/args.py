@@ -217,7 +217,7 @@ def setup_argparse(dataset):
     elif dataset == "resdel":
         parser.add_argument('--num_classes', type=int, default=20,
                             help='number of classes for the classification.')
-    elif dataset == "mutation":
+    elif dataset in ["mutation", "lep"]:
         parser.add_argument('--num_classes', type=int, default=2,
                             help='number of classes for the classification.')
     # Other recognized datasets without additional options

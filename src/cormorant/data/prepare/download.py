@@ -83,6 +83,9 @@ def prepare_dataset(datadir, dataset, suffix='', subset=None, splits=None, clean
         elif dataset.lower().startswith('mutation'):
             raise NotImplementedError(
                 'Download of Mutation dataset currently not implemented!')
+        elif dataset.lower().startswith('lep'):
+            raise NotImplementedError(
+                'Download of LEP dataset currently not implemented!')
         elif dataset.lower().startswith('esol'):
             raise NotImplementedError(
                 'Download of ESOL dataset currently not implemented!')

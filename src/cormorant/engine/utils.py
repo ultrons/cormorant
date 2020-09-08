@@ -108,6 +108,9 @@ def init_file_paths(args):
     elif args.dataset.startswith('mutation'):
        if not args.target:
             args.target = 'label'
+    elif args.dataset.startswith('lep'):
+       if not args.target:
+            args.target = 'label'
     elif args.dataset.startswith('herg'):
        if not args.target:
             args.target = 'act_transf'

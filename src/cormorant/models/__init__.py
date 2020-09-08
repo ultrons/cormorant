@@ -6,6 +6,7 @@ from cormorant.models.cormorant_qm9 import CormorantQM9
 from cormorant.models.cormorant_pdbbind import CormorantPDBBind
 from cormorant.models.cormorant_mutation import CormorantMutation
 from cormorant.models.cormorant_resdel import CormorantResDel
+from cormorant.models.cormorant_lep import CormorantLEP
 from cormorant.models.cormorant_herg import CormorantHERG
 from cormorant.models.cormorant_esol import CormorantESOL
 from cormorant.models.cormorant_freesolv import CormorantFreeSolv
