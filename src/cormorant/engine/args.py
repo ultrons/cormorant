@@ -193,7 +193,7 @@ def setup_shared_args(parser):
                         help='Put a tanh boundary on the elements of the CG product (default: False).')
     parser.add_argument('--cg-agg-normalization', type=str, default='none', 
                         help='Normalization for the aggregation CG product (default: none).')
-    parser.add_argument('--cg_pow_normalization', type=str, default='none',
+    parser.add_argument('--cg-pow-normalization', type=str, default='none',
                         help='Normalization for the non-linearity CG product (default: none).')
 
     return parser
