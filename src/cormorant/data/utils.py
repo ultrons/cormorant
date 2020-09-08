@@ -26,7 +26,8 @@ def initialize_datasets(args, datadir, dataset, suffix='', subset=None, splits=N
         Which subset of a dataset to use.  Action is dependent on the dataset given.
         Must be specified if the dataset has subsets (i.e. MD17).  Otherwise ignored (i.e. GDB9).
     splits : str, optional
-        TODO: DELETE THIS ENTRY
+        Dictionary with filenames for training, validation, and test set.
+        Keys must be 'train', 'valid', 'test'. Values must be file names without the '.npz' ending. 
     force_download : bool, optional
         If true, forces a fresh download of the dataset.
     subtract_thermo : bool, optional

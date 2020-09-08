@@ -30,9 +30,6 @@ def prepare_dataset(datadir, dataset, suffix='', subset=None, splits=None, clean
     datafiles : dict of strings
         Dictionary of strings pointing to the files containing the data. 
 
-    Notes
-    -----
-    TODO: Delete the splits argument?
     """
 
     # If datasets have subsets,
@@ -42,14 +39,14 @@ def prepare_dataset(datadir, dataset, suffix='', subset=None, splits=None, clean
         dataset_dir = [datadir, dataset+suffix]
     logging.info('Loading dataset from %s'%dataset_dir)
 
-    # Names of splits, based upon keys if split dictionary exists, elsewise default to train/valid/test.
-    split_names = splits.keys() if splits is not None else [
-        'train', 'valid', 'test']
-
+    # If split dictionary does not exist, default splits to train/valid/test.
+    if splits is None:
+        splits = {'train':'train', 'valid':'valid', 'test':'test'}
+    
     # Assume one data file for each split
     datafiles = {split: os.path.join(
-        *(dataset_dir + [split + '.npz'])) for split in split_names}
-
+        *(dataset_dir + [splits[split] + '.npz'])) for split in splits.keys()}
+    print(datafiles)
     # Check datafiles exist
     datafiles_checks = [os.path.exists(datafile)
                         for datafile in datafiles.values()]
@@ -70,10 +67,10 @@ def prepare_dataset(datadir, dataset, suffix='', subset=None, splits=None, clean
     if new_download or force_download:
         logging.info('Dataset does not exist. Downloading!')
         if dataset.lower().startswith('qm9'):
-            download_dataset_qm9(datadir, dataset, splits, cleanup=cleanup)
+            download_dataset_qm9(datadir, dataset, splits.keys(), cleanup=cleanup)
         elif dataset.lower().startswith('md17'):
             download_dataset_md17(datadir, dataset, subset,
-                                  splits, cleanup=cleanup)
+                                  splits.keys(), cleanup=cleanup)
         elif dataset.lower().startswith('pdbbind'):
             raise NotImplementedError(
                 'Download of PDBBind currently not implemented!')
