@@ -8,40 +8,36 @@ from cormorant.cg_lib import CGModule, SphericalHarmonicsRel
 from cormorant.models.cormorant_cg import CormorantCG
 
 from cormorant.nn import RadialFilters
-from cormorant.nn import InputLinear
-from cormorant.nn import OutputSoftmax, GetScalarsAtom
+from cormorant.nn import InputLinear, InputMPNN
+from cormorant.nn import OutputLinear, OutputPMLP, OutputSoftmax, GetScalarsAtom
 from cormorant.nn import NoLayer
-
-import logging
 
 
 class CormorantLEP(CGModule):
     """
-    Basic Cormorant Network used to train on ligand efficiency prediction data.
+    Basic Cormorant Network used to train on BDBBind.
 
     Parameters
     ----------
-    maxl : :obj:`int` of :class:`list` of :class:`int`
+    maxl : :obj:`int` of :obj:`list` of :obj:`int`
         Maximum weight in the output of CG products. (Expanded to list of
         length :obj:`num_cg_levels`)
-    max_sh : :class:`int` of :class:`list` of :class:`int`
+    max_sh : :obj:`int` of :obj:`list` of :obj:`int`
         Maximum weight in the output of the spherical harmonics  (Expanded to list of
         length :obj:`num_cg_levels`)
-    num_cg_levels : :class:`int`
+    num_cg_levels : :obj:`int`
         Number of cg levels to use.
-    num_channels : :class:`int` of :class:`list` of :class:`int`
+    num_channels : :obj:`int` of :obj:`list` of :obj:`int`
         Number of channels that the output of each CG are mixed to (Expanded to list of
         length :obj:`num_cg_levels`)
-    num_species : :class:`int`
+    num_species : :obj:`int`
         Number of species of atoms included in the input dataset.
-    device : :class:`torch.device`
+
+    device : :obj:`torch.device`
         Device to initialize the level to
-    dtype : :class:`torch.torch.dtype`
+    dtype : :obj:`torch.dtype`
         Data type to initialize the level to level to
-    dummy_torch_obj: :class:`torch.Tensor`
-        Object created for testing external links.
-    cg_dict : :class:`CGDict <cormorant.cg_lib.CGDict>`
-        Clebsch-gordan dictionary object.
+    cg_dict : :obj:`nn.cg_lib.CGDict`
     """
     def __init__(self, maxl, max_sh, num_cg_levels, num_channels, num_species,
                  cutoff_type, hard_cut_rad, soft_cut_rad, soft_cut_width,
@@ -71,8 +67,6 @@ class CormorantLEP(CGModule):
 
         super().__init__(maxl=max(maxl+max_sh), device=device, dtype=dtype, cg_dict=cg_dict)
         device, dtype, cg_dict = self.device, self.dtype, self.cg_dict
-
-        print('CGDICT', cg_dict.maxl)
 
         self.num_cg_levels = num_cg_levels
         self.num_channels = num_channels
@@ -119,15 +113,16 @@ class CormorantLEP(CGModule):
         num_scalars_edge = self.get_scalars_edge.num_scalars
 
         self.output_layer_atom = OutputSoftmax(num_scalars_atom, num_classes, bias=True,
-                                               device=self.device, dtype=self.dtype)
+                                               device=self.device, dtype=self.dtype) 
         self.output_layer_edge = NoLayer()
 
         logging.info('Model initialized. Number of parameters: {}'.format(
             sum([p.nelement() for p in self.parameters()])))
 
-    def forward(self, data, covariance_test=False):
+
+    def forward_once(self, data):
         """
-        Runs a forward pass of the network.
+        Runs a single forward pass of the network.
 
         Parameters
         ----------
@@ -160,15 +155,56 @@ class CormorantLEP(CGModule):
         atom_scalars = self.get_scalars_atom(atoms_all)
         edge_scalars = self.get_scalars_edge(edges_all)
 
-        # Prediction in this case will depend only on the atom_scalars.
-        # Can make it more general here.
+        # Prediction in this case will depend only on the atom_scalars. Can make
+        # it more general here.
         prediction = self.output_layer_atom(atom_scalars, atom_mask)
+
+        return prediction, atoms_all, edges_all
+ 
+
+    def forward(self, data, covariance_test=False):
+        """
+        Runs a single forward pass of the network.
+
+        Parameters
+        ----------
+        data : :obj:`dict`
+            Dictionary of data to pass to the network.
+        covariance_test : :obj:`bool`, optional
+            If true, returns all of the atom-level representations twice.
+
+        Returns
+        -------
+        prediction : :obj:`torch.Tensor`
+            The output of the network
+        """
+
+        data1 = {}
+        data2 = {}
+        data1['label'] = data['label']
+        data2['label'] = data['label']
+        data1['charges']   = data['charges1']
+        data2['charges']   = data['charges2']
+        data1['positions'] = data['positions1']
+        data2['positions'] = data['positions2']
+        data1['one_hot']   = data['one_hot1']
+        data2['one_hot']   = data['one_hot2']
+        data1['atom_mask'] = data['atom_mask1']
+        data2['atom_mask'] = data['atom_mask2']
+        data1['edge_mask'] = data['edge_mask1']
+        data2['edge_mask'] = data['edge_mask2']
+
+        prediction1, atoms_all1, edges_all1 = self.forward_once(data1)
+        prediction2, atoms_all2, edges_all2 = self.forward_once(data2)
+
+        prediction = (prediction2 - prediction1)**2
 
         # Covariance test
         if covariance_test:
-            return prediction, atoms_all, atoms_all
+            return prediction, atoms_all1, edges_all1
         else:
             return prediction
+
 
     def prepare_input(self, data):
         """
@@ -207,6 +243,7 @@ class CormorantLEP(CGModule):
 
         return atom_scalars, atom_mask, edge_scalars, edge_mask, atom_positions
 
+
 def expand_var_list(var, num_cg_levels):
     if type(var) is list:
         var_list = var + (num_cg_levels-len(var))*[var[-1]]
@@ -215,4 +252,5 @@ def expand_var_list(var, num_cg_levels):
     else:
         raise ValueError('Incorrect type {}'.format(type(var)))
     return var_list
+
 
