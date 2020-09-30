@@ -43,7 +43,9 @@ class CormorantResDel(CGModule):
                  cutoff_type, hard_cut_rad, soft_cut_rad, soft_cut_width,
                  weight_init, level_gain, charge_power, basis_set,
                  charge_scale, gaussian_mask,
-                 top, input, num_mpnn_layers, num_classes=2, activation='leakyrelu',
+                 top, input, num_mpnn_layers, num_classes=20, 
+                 activation='leakyrelu', cgprod_bounded=False,
+                 cg_agg_normalization='none', cg_pow_normalization='none',
                  device=None, dtype=None, cg_dict=None):
 
         logging.info('Initializing network!')
@@ -96,6 +98,9 @@ class CormorantResDel(CGModule):
                      tau_pos, num_cg_levels, num_channels, level_gain, weight_init,
                      cutoff_type, hard_cut_rad, soft_cut_rad, soft_cut_width,
                      cat=True, gaussian_mask=False,
+                     cgprod_bounded=cgprod_bounded,
+                     cg_agg_normalization=cg_agg_normalization,
+                     cg_pow_normalization=cg_pow_normalization,
                      device=self.device, dtype=self.dtype, cg_dict=self.cg_dict)
 
         tau_cg_levels_atom = self.cormorant_cg.tau_levels_atom

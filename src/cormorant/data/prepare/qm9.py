@@ -36,8 +36,8 @@ def download_dataset_qm9(datadir, dataname, splits=None, calculate_thermo=True, 
     logging.info('GDB9 dataset downloaded successfully!')
 
     # If splits are not specified, automatically generate them.
-    if splits is None:
-        splits = gen_splits_gdb9(gdb9dir, cleanup)
+#    if splits is None:
+    splits = gen_splits_gdb9(gdb9dir, cleanup)
 
     # Process GDB9 dataset, and return dictionary of splits
     gdb9_data = {}
