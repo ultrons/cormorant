@@ -111,9 +111,6 @@ def init_file_paths(args):
     elif args.dataset.startswith('lep'):
        if not args.target:
             args.target = 'label'
-    elif args.dataset.startswith('herg'):
-       if not args.target:
-            args.target = 'act_transf'
     elif args.dataset.startswith('esol'):
        if not args.target:
             args.target = 'log_sol'
@@ -126,6 +123,21 @@ def init_file_paths(args):
     elif args.dataset.startswith('aqsoldb'):
        if not args.target:
             args.target = 'logS'
+    elif args.dataset.startswith('herg'):
+       if not args.target:
+            args.target = 'TRANSFORMED_ACTIVITY'
+    elif args.dataset.startswith('pxr'):
+       if not args.target:
+            args.target = 'TRANSFORMED_ACTIVITY'
+    elif args.dataset.startswith('fassif'):
+       if not args.target:
+            args.target = 'TRANSFORMED_ACTIVITY'
+    elif args.dataset.startswith('cyp'):
+       if not args.target:
+            args.target = 'TRANSFORMED_ACTIVITY'
+    elif args.dataset.startswith('clint'):
+       if not args.target:
+            args.target = 'TRANSFORMED_ACTIVITY'
     else:
         raise ValueError('Dataset not recognized!')
 

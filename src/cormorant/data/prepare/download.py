@@ -98,6 +98,18 @@ def prepare_dataset(datadir, dataset, suffix='', subset=None, splits=None, clean
         elif dataset.lower().startswith('herg'):
             raise NotImplementedError(
                 'Download of hERG dataset currently not implemented!')
+        elif dataset.lower().startswith('pxr'):
+            raise NotImplementedError(
+                'Download of PXR dataset currently not implemented!')
+        elif dataset.lower().startswith('fassif'):
+            raise NotImplementedError(
+                'Download of FASSIF dataset currently not implemented!')
+        elif dataset.lower().startswith('clint'):
+            raise NotImplementedError(
+                'Download of CLint datasets currently not implemented!')
+       elif dataset.lower().startswith('cyp'):
+            raise NotImplementedError(
+                'Download of CYP datasets currently not implemented!')
         else:
             raise ValueError(
                 'Incorrect choice of dataset! Must chose qm9/md17!')

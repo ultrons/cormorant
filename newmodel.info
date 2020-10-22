@@ -1,0 +1,9 @@
+Add new models to the folder src/cormorant/models/
+Use the naming scheme "cormorant_${NEWMODEL}.py"
+
+Edit the following files:
+src/cormorant/models/__init__.py
+src/cormorant/data/prepare/download.py
+src/cormorant/engine/args.py
+vim src/cormorant/engine/utils.py
+
