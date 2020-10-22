@@ -5,5 +5,5 @@ Edit the following files:
 src/cormorant/models/__init__.py
 src/cormorant/data/prepare/download.py
 src/cormorant/engine/args.py
-vim src/cormorant/engine/utils.py
+src/cormorant/engine/utils.py
 

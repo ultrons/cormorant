@@ -6,7 +6,7 @@ from cormorant.models.autotest import cormorant_tests
 from cormorant.models.cormorant_md17 import CormorantMD17
 from cormorant.models.cormorant_qm9 import CormorantQM9
 
-# Additional models for MoleculeNet datasets
+# Models for MoleculeNet phys. chem. datasets
 from cormorant.models.cormorant_esol import CormorantESOL
 from cormorant.models.cormorant_freesolv import CormorantFreeSolv
 from cormorant.models.cormorant_lipophilicity import CormorantLipophilicity
@@ -21,4 +21,7 @@ from cormorant.models.cormorant_lep import CormorantLEP
 from cormorant.models.cormorant_aqsoldb import CormorantAqSolDB
 from cormorant.models.cormorant_herg import CormorantHERG
 from cormorant.models.cormorant_pxr import CormorantPXR
+from cormorant.models.cormorant_fassif import CormorantFASSIF
+from cormorant.models.cormorant_clint import CormorantCLINT
+from cormorant.models.cormorant_cyg import CormorantCYG
 
