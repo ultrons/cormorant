@@ -107,7 +107,7 @@ def prepare_dataset(datadir, dataset, suffix='', subset=None, splits=None, clean
         elif dataset.lower().startswith('clint'):
             raise NotImplementedError(
                 'Download of CLint datasets currently not implemented!')
-       elif dataset.lower().startswith('cyp'):
+        elif dataset.lower().startswith('cyp'):
             raise NotImplementedError(
                 'Download of CYP datasets currently not implemented!')
         else:
