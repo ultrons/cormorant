@@ -5,7 +5,7 @@ from cormorant.nn.generic_levels import BasicMLP
 from cormorant.nn.position_levels import RadPolyTrig
 from cormorant.nn.mask_levels import MaskLevel
 
-from cormorant.so3_lib import SO3Tau, SO3Vec
+from cormorant.so3_lib import SO3Tau, SO3Scalar, SO3Vec, SO3Tensor
 
 
 ############# Input to network #############
@@ -73,6 +73,74 @@ class InputLinear(nn.Module):
         out = out.view(atom_features.shape[0:2] + (self.channels_out, 1, 2))
 
         return SO3Vec([out])
+
+    @property
+    def tau(self):
+        return SO3Tau([self.channels_out])
+
+
+
+class InputEdgeLinear(nn.Module):
+    """
+    Module to create rotationally invariant edge feature vectors
+    at the input level.
+
+    This module applies a simple linear mixing matrix to a one-hot of edge
+    embeddings based upon the number of bond types.
+
+    Parameters
+    ----------
+    channels_in : :class:`int`
+        Number of input features before mixing (i.e., a one-hot atom-type embedding).
+    channels_out : :class:`int`
+        Number of output features after mixing.
+    bias : :class:`bool`, optional
+        Include a bias term in the linear mixing level.
+    device : :class:`torch.device`, optional
+        Device to instantite the module to.
+    dtype : :class:`torch.dtype`, optional
+        Data type to instantite the module to.
+    """
+    def __init__(self, channels_in, channels_out, bias=True,
+                 device=torch.device('cpu'), dtype=torch.float):
+        super(InputEdgeLinear, self).__init__()
+
+        self.channels_in = channels_in
+        self.channels_out = channels_out
+
+        self.lin = nn.Linear(channels_in, 2*channels_out, bias=bias)
+        self.lin.to(device=device, dtype=dtype)                                                         
+        self.zero = torch.tensor(0, dtype=dtype, device=device)  
+
+    def forward(self, atom_features, atom_mask, edge_features, edge_mask, norms):
+        """
+        Forward pass for :class:`InputLinear` layer.
+
+        Parameters
+        ----------
+        atom_features : :class:`torch.Tensor`
+            Input atom features, i.e., a one-hot embedding of the atom type,
+            atom charge, and any other related inputs.
+        atom_mask : :class:`torch.Tensor`
+            Mask used to account for padded atoms for unequal batch sizes.
+        edge_features : :class:`torch.Tensor`
+            Unused. Included only for pedagogical purposes.
+        edge_mask : :class:`torch.Tensor`
+            Unused. Included only for pedagogical purposes.
+        norms : :class:`torch.Tensor`
+            Unused. Included only for pedagogical purposes.
+
+        Returns
+        -------
+        :class:`SO3Vec`
+            Processed atom features to be used as input to Clebsch-Gordan layers
+            as part of Cormorant.
+        """
+
+        out = self.lin(edge_features) 
+        out = out.view(out.shape[:-1] + (self.channels_out, 2))
+
+        return SO3Scalar([out])
 
     @property
     def tau(self):
