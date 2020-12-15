@@ -8,8 +8,11 @@ from cormorant.models.cormorant_qm9 import CormorantQM9
 
 # Models for MoleculeNet phys. chem. datasets
 from cormorant.models.cormorant_esol import CormorantESOL
+from cormorant.models.cormorant_esol_bonds import CormorantESOL_Bonds
 from cormorant.models.cormorant_freesolv import CormorantFreeSolv
+from cormorant.models.cormorant_freesolv_bonds import CormorantFreeSolv_Bonds
 from cormorant.models.cormorant_lipophilicity import CormorantLipophilicity
+from cormorant.models.cormorant_lipophilicity_bonds import CormorantLipophilicity_Bonds
 
 # Models for ATOM3D
 from cormorant.models.cormorant_pdbbind import CormorantPDBBind

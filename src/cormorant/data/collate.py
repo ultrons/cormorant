@@ -28,7 +28,7 @@ def batch_stack(props):
         return torch.nn.utils.rnn.pad_sequence(props, batch_first=True, padding_value=0)
 
 
-def drop_zeros(props, to_keep):
+def drop_zeros(props, key, to_keep):
     """
     Function to drop zeros from batches when the entire dataset is padded to the largest molecule size.
 
@@ -51,6 +51,8 @@ def drop_zeros(props, to_keep):
         return props
     elif props[0].dim() == 0:
         return props
+    elif key == 'bonds':
+        return props[:, to_keep, ...][:, :, to_keep, ...]
     else:
         return props[:, to_keep, ...]
 
@@ -73,7 +75,7 @@ def collate_fn(batch):
 
     to_keep = (batch['charges'].sum(0) > 0)
 
-    batch = {key: drop_zeros(prop, to_keep) for key, prop in batch.items()}
+    batch = {key: drop_zeros(prop, key, to_keep) for key, prop in batch.items()}
 
     atom_mask = batch['charges'] > 0
     edge_mask = atom_mask.unsqueeze(1) * atom_mask.unsqueeze(2)
