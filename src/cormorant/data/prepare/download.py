@@ -40,16 +40,14 @@ def prepare_dataset(datadir, dataset, suffix='', subset=None, splits=None, clean
     logging.info('Loading dataset from %s'%dataset_dir)
 
     # If split dictionary does not exist, default splits to train/valid/test.
-    if splits is None:
+    if splits is None: 
         splits = {'train':'train', 'valid':'valid', 'test':'test'}
     
     # Assume one data file for each split
-    datafiles = {split: os.path.join(
-        *(dataset_dir + [splits[split] + '.npz'])) for split in splits.keys()}
+    datafiles = {split: os.path.join(*(dataset_dir + [splits[split] + '.npz'])) for split in splits.keys()}
     print(datafiles)
     # Check datafiles exist
-    datafiles_checks = [os.path.exists(datafile)
-                        for datafile in datafiles.values()]
+    datafiles_checks = [os.path.exists(datafile) for datafile in datafiles.values()]
 
     # Check if prepared dataset exists, and if not set flag to download below.
     # Probably should add more consistency checks, such as number of datapoints, etc...
@@ -57,7 +55,8 @@ def prepare_dataset(datadir, dataset, suffix='', subset=None, splits=None, clean
     if all(datafiles_checks):
         logging.info('Dataset exists and is processed.')
     elif all([not x for x in datafiles_checks]):
-        # If checks are failed.
+        # If checks are failed
+        logging.info('Dataset does not exist. Trying to download it.')
         new_download = True
     else:
         raise ValueError(
@@ -74,7 +73,7 @@ def prepare_dataset(datadir, dataset, suffix='', subset=None, splits=None, clean
         elif dataset.lower().startswith('pdbbind'):
             raise NotImplementedError(
                 'Download of PDBBind currently not implemented!')
-        elif dataset.lower().startswith('resdel'):
+        elif dataset.lower().startswith('res'):
             raise NotImplementedError(
                 'Download of ResDel currently not implemented!')
         elif dataset.lower().startswith('mutation'):

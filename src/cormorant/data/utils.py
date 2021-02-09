@@ -115,31 +115,26 @@ def _get_species(datasets, ignore_check=False):
         List of all species present in the data.  Species labels should be integers.
 
     """
+    # Find the unique list of species in each dataset. 
+    split_species = {}
+    for split, ds in datasets.items():
+        si = []
+        for key in ds.keys():
+            if 'charges' in key: 
+                si.append(ds[key].unique(sorted=True))
+        split_species[split] = torch.cat(tuple(si)).unique(sorted=True)
     # Get a list of all species in the dataset across all splits
-    all_species = torch.cat([dataset['charges'].unique()
-                             for dataset in datasets.values()]).unique(sorted=True)
-
-    # Find the unique list of species in each dataset.
-    split_species = {split: species['charges'].unique(
-        sorted=True) for split, species in datasets.items()}
-
+    all_species = torch.cat( tuple(split_species.values()) ).unique()
     # If zero charges (padded, non-existent atoms) are included, remove them
-    if all_species[0] == 0:
-        all_species = all_species[1:]
-
+    if all_species[0] == 0: all_species = all_species[1:]
     # Remove zeros if zero-padded charges exst for each split
-    split_species = {split: species[1:] if species[0] ==
-                     0 else species for split, species in split_species.items()}
-
+    split_species = {split: species[1:] if species[0] == 0 else species for split, species in split_species.items()}
     # Now check that each split has at least one example of every atomic spcies from the entire dataset.
     if not all([split.tolist() == all_species.tolist() for split in split_species.values()]):
         # Allows one to override this check if they really want to. Not recommended as the answers become non-sensical.
         if ignore_check:
-            logging.error(
-                'The number of species is not the same in all datasets!')
+            logging.error('The number of species is not the same in all datasets!')
         else:
-            raise ValueError(
-                'Not all datasets have the same number of species!')
-
+            raise ValueError('Not all datasets have the same number of species!')
     # Finally, return a list of all species
     return all_species

@@ -33,12 +33,19 @@ class ProcessedDataset(Dataset):
 
         self.data = data
 
+        # Get the size of all parts of the dataset
+        ds_sizes = [len(self.data[key]) for key in self.data.keys()]
+        # Make sure all parts of the dataset have the same length
+        for size in ds_sizes[1:]: assert size == ds_sizes[0]
+        # Set the dataset size
+        ds_size = ds_sizes[0]
+
         if num_pts < 0:
-            self.num_pts = len(data['charges'])
+            self.num_pts = ds_size
         else:
-            if num_pts > len(data['charges']):
+            if num_pts > ds_size:
                 logging.warning('Desired number of points ({}) is greater than the number of data points ({}) available in the dataset!'.format(num_pts, len(data['charges'])))
-                self.num_pts = len(data['charges'])
+                self.num_pts = ds_size
             else:
                 self.num_pts = num_pts
 
@@ -58,19 +65,23 @@ class ProcessedDataset(Dataset):
                 data[key] -= data[key + '_thermo'].to(data[key].dtype)
 
         self.included_species = included_species
-
-        self.data['one_hot'] = self.data['charges'].unsqueeze(-1) == included_species.unsqueeze(0).unsqueeze(0)
-
+        # One-hot encoding for charges
+        charge_keys = []
+        for key in self.data.keys():
+            if 'charges' in key: charge_keys.append(key)
+        for key in charge_keys:
+            nk = key.replace('charges', 'one_hot')
+            self.data[nk] = self.data[key].unsqueeze(-1) == included_species.unsqueeze(0).unsqueeze(0)
+#        self.data['one_hot'] = self.data['charges'].unsqueeze(-1) == included_species.unsqueeze(0).unsqueeze(0)
+        # Set parameters
         self.num_species = len(included_species)
         self.max_charge = max(included_species)
-
         self.parameters = {'num_species': self.num_species, 'max_charge': self.max_charge}
-
         # Get a dictionary of statistics for all properties that are one-dimensional tensors.
         self.calc_stats()
-
+        # Shuffle the dataset
         if shuffle:
-            self.perm = torch.randperm(len(data['charges']))[:self.num_pts]
+            self.perm = torch.randperm(ds_size)[:self.num_pts]
         else:
             self.perm = None
 
