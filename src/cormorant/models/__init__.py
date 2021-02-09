@@ -27,4 +27,5 @@ from cormorant.models.cormorant_pxr import CormorantPXR
 from cormorant.models.cormorant_fassif import CormorantFASSIF
 from cormorant.models.cormorant_clint import CormorantCLINT
 from cormorant.models.cormorant_cyp import CormorantCYP
+from cormorant.models.cormorant_cyp import CormorantFUP
 

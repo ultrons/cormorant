@@ -138,6 +138,9 @@ def init_file_paths(args):
     elif args.dataset.startswith('clint'):
        if not args.target:
             args.target = 'TRANSFORMED_ACTIVITY'
+    elif args.dataset.startswith('fup'):
+       if not args.target:
+            args.target = 'TRANSFORMED_ACTIVITY'
     else:
         raise ValueError('Dataset not recognized!')
 

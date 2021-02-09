@@ -235,6 +235,8 @@ def setup_argparse(dataset):
         pass
     elif dataset.lower().startswith('cyp'):
         pass
+    elif dataset.lower().startswith('fup'):
+        pass
     else:
         raise ValueError("Dataset is not recognized.")
     return parser

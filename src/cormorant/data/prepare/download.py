@@ -110,6 +110,9 @@ def prepare_dataset(datadir, dataset, suffix='', subset=None, splits=None, clean
         elif dataset.lower().startswith('cyp'):
             raise NotImplementedError(
                 'Download of CYP datasets currently not implemented!')
+        elif dataset.lower().startswith('fup'):
+            raise NotImplementedError(
+                'Download of FUP datasets currently not implemented!')
         else:
             raise ValueError(
                 'Incorrect choice of dataset! Must chose qm9/md17!')

@@ -15,9 +15,9 @@ from cormorant.nn import NoLayer
 import logging
 
 
-class CormorantCYG(CGModule):
+class CormorantFUP(CGModule):
     """
-    Basic Cormorant Network used to train on PXR data.
+    Cormorant Network used to train on FUP... data.
 
     Parameters
     ----------
