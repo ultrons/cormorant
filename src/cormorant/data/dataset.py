@@ -72,6 +72,7 @@ class ProcessedDataset(Dataset):
         for key in charge_keys:
             nk = key.replace('charges', 'one_hot')
             self.data[nk] = self.data[key].unsqueeze(-1) == included_species.unsqueeze(0).unsqueeze(0)
+#            self.data.pop(key, None)
 #        self.data['one_hot'] = self.data['charges'].unsqueeze(-1) == included_species.unsqueeze(0).unsqueeze(0)
         # Set parameters
         self.num_species = len(included_species)
