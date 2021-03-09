@@ -307,3 +307,169 @@ class OutputSoftmax(nn.Module):
 
         return predict
 
+
+class OutputSoftmaxPMLP(nn.Module):
+    """
+    Module to create prediction based upon a set of rotationally invariant
+    atom feature vectors.
+
+    This is peformed in a three-step process::
+
+    (1) A MLP is applied to each set of scalar atom-features.
+    (2) The environments are summed up.
+    (3) Another MLP is applied to the output to predict a single learning target.
+
+    Parameters
+    ----------
+    num_scalars : :class:`int`
+        Number scalars that will be used in the prediction at the output
+        of the network.
+    num_classes : :class:`int`
+        Number of classes.
+    bias : :class:`bool`, optional
+        Include a bias term in the linear mixing level.
+    device : :class:`torch.device`, optional
+        Device to instantite the module to.
+    dtype : :class:`torch.dtype`, optional
+        Data type to instantite the module to.
+    """
+    def __init__(self, num_scalars, num_classes, num_mixed=64, activation='leakyrelu', device=torch.device('cpu'), dtype=torch.float):
+        super(OutputSoftmaxPMLP, self).__init__()
+
+        self.num_scalars = num_scalars
+        self.num_mixed = num_mixed
+
+        self.mlp1 = BasicMLP(2*num_scalars, num_mixed, num_hidden=1, activation=activation, device=device, dtype=dtype)
+        self.mlp2 = BasicMLP(num_mixed, num_classes, num_hidden=1, activation=activation, device=device, dtype=dtype)
+
+        self.zero = torch.tensor(0, device=device, dtype=dtype)
+
+    def forward(self, atom_scalars, atom_mask):
+        """
+        Forward step for :class:`OutputPMLP`
+
+        Parameters
+        ----------
+        atom_scalars : :class:`torch.Tensor`
+            Scalar features for each atom used to predict the final learning target.
+        atom_mask : :class:`torch.Tensor`
+            Unused. Included only for pedagogical purposes.
+
+        Returns
+        -------
+        predict : :class:`torch.Tensor`
+            Tensor used for predictions.
+        """
+        # Reshape scalars appropriately
+        atom_scalars = atom_scalars.view(atom_scalars.shape[:2] + (2*self.num_scalars,))
+
+        # First MLP applied to each atom
+        x = self.mlp1(atom_scalars)
+
+        # Reshape to sum over each atom in molecules, setting non-existent atoms to zero.
+        atom_mask = atom_mask.unsqueeze(-1)
+        x = torch.where(atom_mask, x, self.zero).sum(1)
+
+        # Prediction on permutation invariant representation of molecules
+        predict = self.mlp2(x)
+
+        predict = predict.squeeze(-1)
+
+        return predict
+
+
+class OutputLinearOnce(nn.Module):
+    """
+    Module to create prediction based upon a set of rotationally invariant
+    atom feature vectors. This is performed in a permutation invariant way
+    by using a (batch-masked) sum over all atoms, and then applying a
+    linear mixing layer to predict a single output.
+    Parameters
+    ----------
+    num_scalars : :class:`int`
+        Number scalars that will be used in the prediction at the output
+        of the network.
+    bias : :class:`bool`, optional
+        Include a bias term in the linear mixing level.
+    device : :class:`torch.device`, optional
+        Device to instantite the module to.
+    dtype : :class:`torch.dtype`, optional
+        Data type to instantite the module to.
+    """
+    def __init__(self, num_scalars, bias=True, device=torch.device('cpu'), dtype=torch.float):
+        super(OutputLinearOnce, self).__init__()
+        self.num_scalars = num_scalars
+        self.bias = bias
+        self.lin = nn.Linear(2*num_scalars, 36, bias=bias)
+        self.lin.to(device=device, dtype=dtype)
+        self.zero = torch.tensor(0, dtype=dtype, device=device)
+
+    def forward(self, atom_scalars, atom_mask):
+        """
+        Forward step for :class:`OutputLinear`
+        Parameters
+        ----------
+        atom_scalars : :class:`torch.Tensor`
+            Scalar features for each atom used to predict the final learning target.
+        atom_mask : :class:`torch.Tensor`
+            Unused. Included only for pedagogical purposes.
+        Returns
+        -------
+        predict : :class:`torch.Tensor`
+            Tensor used for predictions.
+        """
+        s = atom_scalars.shape
+        atom_scalars = atom_scalars.view((s[0], s[1], -1)).sum(1)
+        predict = self.lin(atom_scalars)
+        predict = predict.squeeze(-1)
+        return predict
+
+
+class OutputSiamesePMLP(nn.Module):
+    """
+    Module to create prediction based upon a set of rotationally invariant
+    atom feature vectors.
+    This is peformed in a three-step process::
+    (1) A MLP is applied to each set of scalar atom-features.
+    (2) The environments are summed up.
+    (3) Another MLP is applied to the output to predict a single learning target.
+    Parameters
+    ----------
+    num_scalars : :class:`int`
+        Number scalars that will be used in the prediction at the output
+        of the network.
+    bias : :class:`bool`, optional
+        Include a bias term in the linear mixing level.
+    device : :class:`torch.device`, optional
+        Device to instantite the module to.
+    dtype : :class:`torch.dtype`, optional
+        Data type to instantite the module to.
+    """
+    def __init__(self, num_scalars, num_mixed=64, activation='leakyrelu', device=torch.device('cpu'), dtype=torch.float):
+        super(OutputSiamesePMLP, self).__init__()
+        self.num_scalars = num_scalars
+        self.num_mixed = num_mixed
+        self.mlp1 = BasicMLP(2*num_scalars, num_mixed, num_hidden=1, activation=activation, device=device, dtype=dtype)
+        self.mlp2 = BasicMLP(num_mixed, 1, num_hidden=1, activation=activation, device=device, dtype=dtype)
+        self.zero = torch.tensor(0, device=device, dtype=dtype)
+
+    def forward(self, atom_scalars):
+        """
+        Forward step for :class:`OutputSiamesePMLP`
+        Parameters
+        ----------
+        atom_scalars : :class:`torch.Tensor`
+            Scalar features for each atom used to predict the final learning target.
+        Returns
+        -------
+        predict : :class:`torch.Tensor`
+            Tensor used for predictions.
+        """
+        # Reshape scalars appropriately
+        print('atom_scalars:', atom_scalars.shape)
+        # First MLP applied to each atom
+        x = self.mlp1(atom_scalars)
+        # Prediction on permutation invariant representation of molecules
+        predict = self.mlp2(x)
+        predict = predict.squeeze(-1)
+        return predict
