@@ -192,9 +192,9 @@ def setup_shared_args(parser):
     parser.add_argument('--cgprod-bounded', action=BoolArg, default=False,
                         help='Put a tanh boundary on the elements of the CG product (default: False).')
     parser.add_argument('--cg-agg-normalization', type=str, default='none', 
-                        help='Normalization for the aggregation CG product (default: none).')
+                        help='Normalization for the aggregation CG product (default: none, options: 'normal', 'relu', 'softmax', 'none' ).')
     parser.add_argument('--cg-pow-normalization', type=str, default='none',
-                        help='Normalization for the non-linearity CG product (default: none).')
+                        help='Normalization for the non-linearity CG product (default: none, options: 'normal', 'relu', 'softmax', 'none').')
 
     return parser
 
