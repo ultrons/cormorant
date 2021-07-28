@@ -68,6 +68,9 @@ class GetScalarsAtom(nn.Module):
 
         scalars = reps[0]
 
+        import pdb
+        pdb.set_trace()
+
         if self.full_scalars:
             scalars_tr  = [(sign*part*part.flip(-2)).sum(dim=(-1, -2), keepdim=True) for part, sign in zip(reps, self.signs_tr)]
             scalars_mag = [(part*part).sum(dim=(-1, -2), keepdim=True) for part in reps]

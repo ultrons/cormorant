@@ -71,6 +71,7 @@ class InputLinear(nn.Module):
 
         out = torch.where(atom_mask, self.lin(atom_features), self.zero)
         out = out.view(atom_features.shape[0:2] + (self.channels_out, 1, 2))
+        print("Output shape from InputLinear:", out.size())
 
         return SO3Vec([out])
 
@@ -139,6 +140,7 @@ class InputEdgeLinear(nn.Module):
 
         out = self.lin(edge_features) 
         out = out.view(out.shape[:-1] + (self.channels_out, 2))
+        print("Output shape from InputLinear:", out.size())
 
         return SO3Scalar([out])
 

@@ -6,7 +6,7 @@ import torch.optim.lr_scheduler as sched
 import argparse, os, sys, pickle
 from datetime import datetime
 from math import sqrt, inf, log, log2, exp, ceil
-
+from torch_xla.debug import profiler as xp
 MAE = torch.nn.L1Loss()
 MSE = torch.nn.MSELoss()
 RMSE = lambda x, y : sqrt(MSE(x, y))
@@ -42,7 +42,7 @@ class Engine:
         self.task = task
         self.log_test = log_test
 
-        self.stats = dataloaders['train'].dataset.stats
+        self.stats = dataloaders['train']._loader.dataset.stats
 
         # TODO: Fix this until TB summarize is implemented.
         self.summarize = False
@@ -211,6 +211,8 @@ class Engine:
             self.scheduler.step()
 
     def train(self):
+        server = xp.start_server(3924)
+        
         epoch0 = self.epoch
         for epoch in range(epoch0, self.args.num_epoch):
             self.epoch = epoch
@@ -220,6 +222,8 @@ class Engine:
             self._warm_restart(epoch)
             self._step_lr_epoch()
 
+            import pdb
+            #pdb.set_trace()
             train_predict, train_targets = self.train_epoch()
             valid_predict, valid_targets = self.predict('valid')
 
@@ -264,7 +268,7 @@ class Engine:
     def train_epoch(self):
         dataloader = self.dataloaders['train']
 
-        current_idx, num_data_pts = 0, len(dataloader.dataset)
+        current_idx, num_data_pts = 0, len(dataloader._loader.dataset)
 
         if self.task == 'regression':
             self.mae, self.rmse, self.batch_time = 0, 0, 0
@@ -278,35 +282,42 @@ class Engine:
         self.model.train()
         epoch_t = datetime.now()
         for batch_idx, data in enumerate(dataloader):
-            batch_t = datetime.now()
+            with xp.StepTrace('ENN-TRAIN'):
+                batch_t = datetime.now()
 
-            # Standard zero-gradient
-            self.optimizer.zero_grad()
-
-            # Get targets and predictions
-            targets = self._get_target(data)
-            predict = self.model(data)
-
-            # Calculate loss and backprop
-            loss = self.loss_fn(predict, targets)
-            loss.backward()
-
-            # Clip the gradient
-            if self.clip_value is not None:
-                torch.nn.utils.clip_grad_value_(self.model.parameters(), self.clip_value)
-
-            # Step optimizer and learning rate
-            self.optimizer.step()
-            self._step_lr_batch()
-
-            targets, predict = targets.detach().cpu(), predict.detach().cpu()
-
-            all_predict.append(predict)
-            all_targets.append(targets)
-
-            self._log_minibatch(batch_idx, loss, targets, predict, batch_t, epoch_t)
-
-            self.minibatch += 1
+                # Standard zero-gradient
+                self.optimizer.zero_grad()
+                
+                # Get targets and predictions
+                targets = self._get_target(data)
+                predict = self.model(data)
+                
+                # Calculate loss and backprop
+                loss = self.loss_fn(predict, targets)
+                with xp.Trace('loss_backward'):
+                    loss.backward()
+                
+                # Clip the gradient
+                if self.clip_value is not None:
+                    torch.nn.utils.clip_grad_value_(self.model.parameters(), self.clip_value)
+                
+                # Step optimizer and learning rate
+                import torch_xla.core.xla_model as xm
+                # self.optimizer.step()
+                xm.optimizer_step(self.optimizer.step())
+                import pdb
+                #pdb.set_trace()
+                self._step_lr_batch()
+                
+                #targets, predict = targets.detach().cpu(), predict.detach().cpu()
+                
+                all_predict.append(predict)
+                all_targets.append(targets)
+                
+                self._log_minibatch(batch_idx, loss, targets, predict, batch_t, epoch_t)
+                
+                self.minibatch += 1
+                xm.mark_step()
 
         all_predict = torch.cat(all_predict)
         all_targets = torch.cat(all_targets)

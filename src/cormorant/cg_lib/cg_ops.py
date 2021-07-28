@@ -272,7 +272,8 @@ def complex_kron_product(z1, z2, aggregate=False):
     s20 = b2 + (s1[0],) + torch.Size([1, s2[1], 1, s2[2]])
 
     z = (z1.view(s10) * z2.view(s20))
-    z = z.contiguous().view(s12)
+    #z = z.contiguous().view(s12)
+    z = z.view(s12)
 
     if aggregate:
         # Aggregation is sum over aggregation sum dimension defined above
